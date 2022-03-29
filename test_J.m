@@ -23,6 +23,34 @@ for i_test_cases = 1:numel(test_cases)
     errb = norm(diffb);
 end
 
+%% Test Jacobian function J_space via finite differences
+% Since the (geometric) Jacobian is partial derivative of the angle and
+% translation of the end effector for a change in a joint's angle,
+% we can change the joint angles slightly, and see if the end effector
+% frame changes by the jacobian.
+
+% TODO: THIS IS STILL NOT WORKING.
+
+delta = 0.01;
+deltas = eye(robot.dof) * delta;
+test_cases = [5];
+for i_test_cases = 1:numel(test_cases)
+    i = test_cases(i_test_cases);
+    joint_angles = deg2rad(joints(i,:)');
+    pose_init = FK_space(robot, joint_angles);
+    J = J_space(robot, joint_angles);
+    for j = 1:robot.dof
+        pose = FK_space(robot, joint_angles + deltas(:, j));
+        % If it was analytical jacobian, I think this would be right:
+        %dpose = (trans2screw(pose) - trans2screw(pose_init)) / delta;
+        % Change from one frame to another
+        dpose = inv(pose_init) * pose;
+        dposescrew = trans2screw(dpose, delta);
+        err = J(:, j) - dposescrew;
+        fprintf('Config %02d   Axis %1d  Linear err %f\n', i, j, norm(err(1:3)));
+    end
+end
+
 %% Test Jacobian function J_space
 
 % TODO:
