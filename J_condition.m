@@ -1,3 +1,4 @@
+
 function [mu2] = J_condition(J)
     % Calculates the condition number of jacobian
     % Inputs:
