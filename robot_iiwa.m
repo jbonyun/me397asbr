@@ -4,18 +4,6 @@ function [robot] = robot_iiwa()
     % Manually defined screw of all the things
     % Configuration of end effector in home position (straight up).
     robot.home = [eye(3,3) [0; 0; 1306]; 0 0 0 1];
-    % Screw for each axis when in home position.
-    % Each row is an axis.
-    % Based on spec sheet:
-    % robot.screw_old = [
-    %     0  0 -1     0 0 0;  % A1
-    %     0  -1 0   360 0 0;  % A2
-    %     0  0 -1     0 0 0;  % A3
-    %     0 -1  0   780 0 0;  % A4
-    %     0  0 -1     0 0 0;  % A5
-    %     0  1  0 -1180 0 0;  % A6
-    %     0  0 -1     0 0 0;  % A7
-    %     ];
     
     % In home position, the direction of the axis of rotation for each joint.
     % Positive rotations are CCW when looking in the given direction.
