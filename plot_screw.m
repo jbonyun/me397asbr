@@ -19,7 +19,7 @@ function plot_screw(q, direction, h, theta, varargin)
     addOptional(p, 'ax', gca, isAxes);
     addParameter(p, 'LineSpec', 'r', @ischar);
     addParameter(p, 'Label', nan, @ischar);
-    addParameter(p, 'LabelQ', true, @isbool);
+    addParameter(p, 'LabelQ', true, @islogical);
     p.KeepUnmatched = true;
     parse(p, q, direction, h, theta, varargin{:});
     args = p.Results;
@@ -35,11 +35,6 @@ function plot_screw(q, direction, h, theta, varargin)
     end
 
     % Arrow from q along direction for h*theta.
-    if h == 0
-        line_len = 1;
-    else
-        line_len = h * theta;
-    end
     line_len = max(1, h * theta);
     plot_3d_arrow(q, direction, line_len, 'LineSpec', 'k', 'LineWidth', 1, args.ForwardArgs{:});
 
