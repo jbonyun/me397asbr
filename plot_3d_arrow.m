@@ -14,17 +14,16 @@ function plot_3d_arrow(origin, direction, length, varargin)
     addRequired(p, 'direction', isVec3);
     addRequired(p, 'length', @isnumeric);
     addParameter(p, 'Axis', gca, isAxes);
-    addParameter(p, 'LineSpec', 'r', @ischar);
     addParameter(p, 'Label', nan, @ischar);
     p.KeepUnmatched = true;
     parse(p, origin, direction, length, varargin{:});
     args = p.Results;
-    args.ForwardArgs = [fieldnames(p.Unmatched) struct2cell(p.Unmatched)];
+    args.ForwardArgs = [fieldnames(p.Unmatched) struct2cell(p.Unmatched)]';
 
     was_hold = ishold();
     hold on;
 
-    quiver3(args.Axis, args.origin(1), args.origin(2), args.origin(3), direction(1)*args.length, direction(2)*args.length, direction(3)*args.length, args.LineSpec, 'LineWidth', 2, args.ForwardArgs{:});
+    quiver3(args.Axis, args.origin(1), args.origin(2), args.origin(3), direction(1)*args.length, direction(2)*args.length, direction(3)*args.length, args.ForwardArgs{:});
     if ~isnan(args.Label)
         text(origin(1), origin(2), origin(3), args.Label, 'Interpreter', 'latex');
     end
