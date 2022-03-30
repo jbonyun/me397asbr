@@ -28,19 +28,19 @@ function end_frame = FK_space(robot, joint_angles)
         hold on;
     end
 
-    end_frame = [eye(3) [0; 0; 0]; 0 0 0 1];
+    cumulative_transform = [eye(3) [0; 0; 0]; 0 0 0 1];
     for i = 1:n
         skew_s = skewsym(robot.screw(:, i));
-        end_frame = end_frame * expm(skew_s * joint_angles(i));
+        cumulative_transform = cumulative_transform * expm(skew_s * joint_angles(i));
         if do_plot
             joint_home = [eye(3) robot.offset(i,:)'; 0 0 0 1];
-            joint_frame = end_frame * joint_home;
+            joint_frame = cumulative_transform * joint_home;
             plot_3d_axis_transform(joint_frame, 'scale', axis_scale);
             plot_joint_axis(joint_frame, robot.axes(i,:)', axis_scale*2);
         end
     end
 
-    end_frame = end_frame * robot.home;
+    end_frame = cumulative_transform * robot.home;
     
     if do_plot
         plot_3d_axis_transform(end_frame, 'ax', gca, 'scale', axis_scale*2);
