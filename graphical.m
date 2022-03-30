@@ -1,5 +1,8 @@
 % Graphical demonstration of the robot
 
+clear;
+test_kuka_examples;
+
 % Load the robot from the Matlab built-in set.
 kuka = loadrobot('kukaIiwa14');
 % Prepare an array of structs that can be used for the robot config
