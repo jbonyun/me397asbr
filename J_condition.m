@@ -20,8 +20,9 @@ function [mu2] = J_condition(J)
     Aorien = Jorien*Jorien';
     % Find eigenvalues of A
     eval = [eig(Atrans) eig(Aorien)];
-    % Make sure it is PD
-    assert(all(min(eval) > 0), 'J*JT matrix is not positive-definite');
+    % Make sure it is semi-PD
+    % A zero eigenvalue is okay, but is a singular position.
+    assert(all(min(eval) >= 0), 'J*JT matrix is not positive-definite');
     % Calculate
     emax = max(eval);
     emin = min(eval);
