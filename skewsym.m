@@ -8,7 +8,7 @@ function ss = skewsym(vec)
     % On behalf of the Sun/Bonyun team for ME397 ASBR, Spring 2022.
 
     if all(size(vec) == [3 1]) || all(size(vec) == [1 3])
-        ss = zeros(3,3);
+        ss = zeros(3,3,'like',vec);
         % Fill in the key values in upper triangular.
         ss(1, 2) = -vec(3);
         ss(1, 3) =  vec(2);
