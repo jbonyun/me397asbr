@@ -107,3 +107,37 @@ for i = 1:num_reps
     assert(all(mu3 ~= 0), 'Ellipse volumes should both be non-zero for non-singular position');
 end
 
+%% Test near singular positions to examine metric slope
+% As we move a joint away from singularity, the metrics ought to improve.
+
+singular_pose = [0 0 0 0 0 0 0];
+mu1s = [];
+mu2s = [];
+mu3s = [];
+for delta = 0:0.0001:0.0100
+    singular_pose(4) = delta;
+    Js = J_space(robot, singular_pose);
+    mu1s = [mu1s; J_isotropy(Js)];
+    mu2s = [mu2s; J_condition(Js)];
+    mu3s = [mu3s; J_ellipsoid_volume(Js)];
+end
+assert(issorted(mu1s, 'descend'), 'Isotropy did not diminish while moving away from singularity');
+assert(issorted(mu2s, 'descend'), 'Condition number did not diminish while moving away from singularity');
+assert(issorted(mu3s, 'ascend'), 'Ellipsoid volume did not increase while moving away from singularity');
+
+singular_pose = rand_angles();
+singular_pose([2 4 6]) = 0;
+mu1s = [];
+mu2s = [];
+mu3s = [];
+for delta = 0:0.0001:0.0100
+    singular_pose([2 6]) = -delta;
+    singular_pose(4) = delta;
+    Js = J_space(robot, singular_pose);
+    mu1s = [mu1s; J_isotropy(Js)];
+    mu2s = [mu2s; J_condition(Js)];
+    mu3s = [mu3s; J_ellipsoid_volume(Js)];
+end
+assert(issorted(mu1s, 'descend'), 'Isotropy did not diminish while moving away from singularity');
+assert(issorted(mu2s, 'descend'), 'Condition number did not diminish while moving away from singularity');
+assert(issorted(mu3s, 'ascend'), 'Ellipsoid volume did not increase while moving away from singularity');
