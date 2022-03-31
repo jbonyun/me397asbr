@@ -1,5 +1,4 @@
 
-
 clear;
 robot = robot_iiwa();
 test_kuka_examples;
@@ -79,7 +78,8 @@ for eg_i = 1:numel(eg_rows)
 end
 
 %% Test non-singular poses in our examples from real robot
-eg_rows = [1 2 3 4 5 6 7 12 13 14 15 16];  % 1 is close
+% 1 is close to singular, but is numerically distinguishable.
+eg_rows = [1 2 3 4 5 6 7 12 13 14 15 16];
 for eg_i = 1:numel(eg_rows)
     eg_angles = deg2rad(joints(eg_rows(eg_i), :));
     Js = J_space(robot, eg_angles);
@@ -90,3 +90,20 @@ for eg_i = 1:numel(eg_rows)
     mu3 = J_ellipsoid_volume(Js);
     assert(all(mu3 ~= 0), 'Ellipse volumes should both be non-zero for non-singular position');
 end
+
+%% Test non-singular poses with pure random angles.
+% In theory we could accidentally get a random singular position. But that
+% seems highly unlikely. It takes special effort to create a singularity,
+% especially in a 7-DOF robot.
+num_reps = 1000;
+for i = 1:num_reps
+    eg_angles = rand_angles();
+    Js = J_space(robot, eg_angles);
+    mu1 = J_isotropy(Js);
+    assert(all(~isinf(mu1)), 'Isotropy should both be finite for non-singular position');
+    mu2 = J_condition(Js);
+    assert(all(~isinf(mu2)), 'Condition Number should both be finite for non-singular position');
+    mu3 = J_ellipsoid_volume(Js);
+    assert(all(mu3 ~= 0), 'Ellipse volumes should both be non-zero for non-singular position');
+end
+
