@@ -20,6 +20,8 @@ for i = 1:numel(eg_poses)
     show(kuka, config);
     title(sprintf('Test Config %d', eg_pose_num));
     % Wait for input before continuing.
-    pause;
+    if i < numel(eg_poses)
+        pause;
+    end
 end
-close;
+
