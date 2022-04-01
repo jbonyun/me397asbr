@@ -1,4 +1,4 @@
-function end_frame = FK_space(robot, joint_angles)
+function end_frame = FK_space(robot, joint_angles, varargin)
     % Calculates the forward kinematics in the space frame.
     % Inputs:
     %   robot: struct with robot description
@@ -12,7 +12,12 @@ function end_frame = FK_space(robot, joint_angles)
     % On behalf of the Sun/Bonyun team for ME397 ASBR, Spring 2022.
     % Source: [none yet]
 
-    do_plot = false;
+    p = inputParser;
+    %isAxes = @(x) isa(x, 'matlab.graphics.axis.Axes');
+    %addRequired(p, 'Jpart'); %, @(x)(validateattributes(x, {'numeric', 'real', 'nonempty', 'nonnan', 'finite', '2d', 'rows', 3})));
+    addOptional(p, 'DoPlot', false, @(x)validateattributes(x, {'logical'}));
+    parse(p, varargin{:});
+    args = p.Results;
 
     if ndims(joint_angles) == 1
         n = numel(joint_angles);
@@ -20,7 +25,7 @@ function end_frame = FK_space(robot, joint_angles)
         n = size(joint_angles,1);
     end
 
-    if do_plot
+    if args.DoPlot
         axis_scale = max(max(robot.offset)) / 50;
         figure;
         axis equal;
@@ -32,7 +37,7 @@ function end_frame = FK_space(robot, joint_angles)
     for i = 1:n
         skew_s = skewsym(robot.screw(:, i));
         cumulative_transform = cumulative_transform * expm(skew_s * joint_angles(i));
-        if do_plot
+        if args.DoPlot
             joint_home = [eye(3) robot.offset(i,:)'; 0 0 0 1];
             joint_frame = cumulative_transform * joint_home;
             plot_3d_axis_transform(joint_frame, 'scale', axis_scale);
@@ -42,7 +47,7 @@ function end_frame = FK_space(robot, joint_angles)
 
     end_frame = cumulative_transform * robot.home;
     
-    if do_plot
+    if args.DoPlot
         plot_3d_axis_transform(end_frame, 'ax', gca, 'scale', axis_scale*2);
         hold off;
     end

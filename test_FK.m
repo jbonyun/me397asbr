@@ -1,3 +1,5 @@
+clear;
+
 % Load robot info
 robot = robot_iiwa();
 
