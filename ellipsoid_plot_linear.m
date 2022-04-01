@@ -1,5 +1,5 @@
-function ellipsoid_plot_angular(J, varargin)
-    % Plots manipulability ellipsoid of jacobian's angular portion.
+function ellipsoid_plot_linear(J, varargin)
+    % Plots manipulability ellipsoid of jacobian's linear portion.
     % Inputs:
     %   J: nxdof jacobian matrix
     % Outputs: none
@@ -9,10 +9,10 @@ function ellipsoid_plot_angular(J, varargin)
     assert(size(J,1) == 6, 'Jacobian must be in R6');
 
     % Take linear/translation portion of Jacobian.
-    Jang = J(4:6, :);
+    Jlin = J(1:3, :);
 
-    plot_manipulability_ellipsoid(Jang, varargin{:});
-    title('Angular Manipulabity Ellipsoid');
-    xlabel('Z');
-    ylabel('Y');
-    zlabel('X');
+    plot_manipulability_ellipsoid(Jlin, varargin{:});
+    title('Linear Manipulabity Ellipsoid');
+    xlabel('x');
+    ylabel('y');
+    zlabel('z');
