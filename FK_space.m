@@ -27,9 +27,11 @@ function end_frame = FK_space(robot, joint_angles, varargin)
     end
 
     if args.DoPlot
-        axis_scale = max(max(robot.offset)) / 50;
+        axis_scale = max(max(robot.offset)) / 20;
         figure;
         axis equal;
+        view(135, 7);
+        xlabel('x'); ylabel('y'); zlabel('z');
         plot_3d_axis([0 0 0]', [1 0 0]', [0 1 0]', [0 0 1]','scale', axis_scale*2);
         hold on;
     end

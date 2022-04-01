@@ -13,9 +13,13 @@ test_kuka_examples;
 
 % Run through our examples, so see if we calculate the same cartesian
 % position for the given joint positions.
-i_set = 1:16; %[1 2 3 4 ];
+do_plot = false;
+i_set = 1:16;
 for i = 1:numel(i_set)
-    fk_pose = FK_space(robot, deg2rad(joints(i_set(i),:)'));
+    fk_pose = FK_space(robot, deg2rad(joints(i_set(i),:)'), 'DoPlot', do_plot);
+    if do_plot
+        title(sprintf('Joint Frames\nConfig %d', i_set(i)));
+    end
     err = norm(fk_pose(1:3, 4)-cart(i_set(i), 1:3)');
     angerr = norm(rad2deg(rot2zyx(fk_pose(1:3,1:3)))-cart(i_set(i), 4:6)');
     fprintf("Pose %2d   Pos error: %f   Angle error: %f\n", i_set(i), err, angerr);
@@ -25,7 +29,6 @@ for i = 1:numel(i_set)
     if angerr > 0.10
         fprintf('Angle not matching for %d\n', i);
         disp([rad2deg(rot2zyx(fk_pose(1:3,1:3))) cart(i_set(i), 4:6)']);
-        %disp([rad2deg(rotm2eul(fk_pose(1:3,1:3), 'ZYX'))' cart(i_set(i), 4:6)']);
     end
 end
 
