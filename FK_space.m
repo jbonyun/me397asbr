@@ -14,9 +14,10 @@ function end_frame = FK_space(robot, joint_angles, varargin)
 
     p = inputParser;
     %isAxes = @(x) isa(x, 'matlab.graphics.axis.Axes');
-    %addRequired(p, 'Jpart'); %, @(x)(validateattributes(x, {'numeric', 'real', 'nonempty', 'nonnan', 'finite', '2d', 'rows', 3})));
-    addOptional(p, 'DoPlot', false, @(x)validateattributes(x, {'logical'}));
-    parse(p, varargin{:});
+    addRequired(p, 'robot'); 
+    addRequired(p, 'joint_angles'); 
+    addParameter(p, 'DoPlot', false);
+    parse(p, robot, joint_angles, varargin{:});
     args = p.Results;
 
     if ndims(joint_angles) == 1
