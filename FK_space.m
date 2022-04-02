@@ -12,7 +12,7 @@ function end_frame = FK_space(robot, joint_angles)
     % On behalf of the Sun/Bonyun team for ME397 ASBR, Spring 2022.
     % Source: [none yet]
 
-    do_plot = true;
+    do_plot = false;
 
     if ndims(joint_angles) == 1
         n = numel(joint_angles);

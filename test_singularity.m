@@ -48,7 +48,7 @@ robot.home = [eye(3,3) [0; 0; d1+d2+d3+d4+d5]; 0 0 0 1];
     end
 
 
-joint_angles=[x1;x2;0;0;0;x6;x7];
+joint_angles=[x1;x2;x3;x4;x5;x6;x7];
 %joint_angles=[0;0;0;0;0;0;0];
 %joint_angles=[10;0;10;10;10;0;10];
 J = sym('a%d%d',[6,7]);
@@ -70,3 +70,4 @@ end
 %%
 J
 rank(J)
+solve ('det(J*J'=0')
