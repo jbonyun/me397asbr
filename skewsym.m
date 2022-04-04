@@ -16,7 +16,7 @@ function ss = skewsym(vec)
         % Copy/negate from upper triangular to lower triangular.
         ss = triu(ss) + (-triu(ss))';
     elseif all(size(vec) == [6 1])
-        ss = zeros(4,4);
+        ss = zeros(4,4,'like',vec);
         ss(1:3, 1:3) = skewsym(vec(1:3));
         ss(1:3, 4) = vec(4:6);
     else
