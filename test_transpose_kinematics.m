@@ -1,3 +1,4 @@
+clear;
 syms x1 x2 x3 x4 x5 x6 x7
 syms d1 d2 d3 d4 d5 real
 
@@ -54,6 +55,7 @@ robot.home = [eye(3,3) [0; 0; 1180]; 0 0 0 1];
 %joint_angles=[10;0;10;10;10;0;10];
 %joint_angles=[1,1,1,1,1,1,1];
 joint_angles=[0.2;0.2;0.2;0.2;0.2;0.2;0.2];
+%joint_angles=[0.4;0.4;0.4;0.4;0.4;0.4;0.4];
 J = sym('a%d%d',[6,7]);
 J(:, 1) = robot.screw(:, 1);
 prod_expon = expm_sym(robot.screw(:, 1) , joint_angles(1));
@@ -66,9 +68,9 @@ end
 end_fram=FK_space_sym(robot,joint_angles)
 
  %%
-
-
-    q=[0.19;0.19;0.19;0.19;0.1;0.1;0.1];
+ 
+    %q=[0.19;0.19;0.19;0.19;0.19;0.19;0.19];
+    q=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
     Xd=trans2vector(end_fram);
     Xd=vpa(Xd,4)
     transform=FK_space(robot,q);
@@ -80,16 +82,22 @@ end_fram=FK_space_sym(robot,joint_angles)
     U =[1 0 0 0 0 0;0 1 0 0 0 0 ;0 0 1 0 0 0;0 0 0 1 0 0;0 0 0 0 1 0;0 0 0 0 0 1];
     K=U*V*U';
     %A=pascal(6);
-    while norm(err)>1
+    Error=[norm(err)];
+    i=1;
+    while norm(err)>3
         Jacobian=J_body_sym(robot,q);
         q_dot=transpose(Jacobian)*K*err;
-        q=q+q_dot*0.0000001
+        q=q+q_dot*0.000001;
         transform=FK_space_sym(robot,q);
         Xe=trans2vector(transform);
         Xe=vpa(Xe,4);
         err=Xd-Xe;
         norm(err)
-        %V=0.5*err'*K*err;
-        %V_dot=-err'*K*(Jacobian*Jacobian')*K*err;  % negative
-        
+        Error(end+1)=norm(err);
+        i=i+1;
     end
+I=1:i;
+plot(I,Error,'-o');
+xlabel('Number of iteration') ;
+ylabel('Norm of error');
+title('J transpose kinematics');

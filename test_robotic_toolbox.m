@@ -6,6 +6,7 @@ robot = importrobot('iiwa14.urdf');
 %joint_angles=[0;pi/2;pi;0;0;-pi/2;0];
 %joint_angles=[pi/2;0;-pi/2;pi/2;0;pi/2;0];
 joint_angles=[0.5;0.5;0.5;0.5;0.5;0.5;0.5];
+%joint_angles=[0.2;0.2;0.2;0.2;0.2;0.2;0.2];
 %config = randomConfiguration(robot)
 config = homeConfiguration(robot);
 for i=1:7
