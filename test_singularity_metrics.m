@@ -35,6 +35,7 @@ assert(any(mu3 == 0), 'At least one volume should be zero for singular position'
 %% Test singular position: A2,A6 are zero; 1/3 are collinear, 5/7 are collinear.
 % Uh, no, this is apparently not singular...
 %   TODO: figure out if this ought to be singular or not.
+% Yuewan's symbolic says this is singular
 
 eg_angles = rand_angles();
 eg_angles([2,6]) = 0;
@@ -50,6 +51,8 @@ assert(any(mu3 == 0), 'At least one volume should be zero for singular position'
 %% Test singular position: A3, A4, A5 are zero -- 2/4/6 are parallel and coplanar + 3/5 are colinear.
 % Uh, no, this is apparently not singular...
 %   TODO: figure out if this ought to be singular or not.
+%   Yuewan's symbolic works says rank is still 6, so not singular.
+%   I guess I didn't apply rules right.
 
 eg_angles = rand_angles();
 eg_angles([3,4,5]) = 0;
