@@ -20,13 +20,8 @@ function end_frame = FK_space(robot, joint_angles, varargin)
     parse(p, robot, joint_angles, varargin{:});
     args = p.Results;
 
-    if ndims(joint_angles) == 1
-        n = numel(joint_angles);
-    else
-        n = size(joint_angles,1);
-    end
     if isnan(args.JointNum)
-        maxn = n;
+        maxn = robot.dof;
     else
         maxn = args.JointNum;
     end

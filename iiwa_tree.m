@@ -39,11 +39,11 @@ jnt.setFixedTransform(trvec2tform((robot.home(1:3,4) - robot.offset(end,:)')'));
 link.Joint = jnt;
 kuka.addBody(link, sprintf('L%d', i+1))
 
-%% Compare FK between the built-in kuka to our own
+%% Compare FK_space between the built-in kuka and our own
 % For a given pose, compares the location of each joint using our own model
 % and the built-in model.
-% Only looks at translation, because we know we treat orientation
-% differently.
+% Comparing to the built-in kuka model, we only look at translation,
+% because we know and like how we differ in terms of orientation.
 
 test_kuka_examples;
 eg_i = 9;
@@ -52,25 +52,27 @@ eg_angles = deg2rad(joints(eg_i,:));
 
 % Mappings of location names between the two models.
 joint_pairs = {
-    {'L2', 'iiwa_link_1'}
-    {'L3', 'iiwa_link_2'}
-    {'L4', 'iiwa_link_3'}
-    {'L5', 'iiwa_link_4'}
-    {'L6', 'iiwa_link_5'}
-    {'L7', 'iiwa_link_6'}
-    {'L8', 'iiwa_link_7'}
-    {'Flange', 'iiwa_link_ee'}
+    {'L2', 'iiwa_link_1', 1}
+    {'L3', 'iiwa_link_2', 2}
+    {'L4', 'iiwa_link_3', 3}
+    {'L5', 'iiwa_link_4', 4}
+    {'L6', 'iiwa_link_5', 5}
+    {'L7', 'iiwa_link_6', 6}
+    {'L8', 'iiwa_link_7', 7}
+    {'Flange', 'iiwa_link_ee', nan}
     };
 
 % Compare frames
 for pair_i = 1:numel(joint_pairs)
     fk = FK_toolbox(kuka, eg_angles, joint_pairs{pair_i}{1});
     fkb = FK_toolbox(kuka_b, eg_angles, joint_pairs{pair_i}{2});
-    fkus = FK_space(robot, eg_angles);
-    fprintf('\n%s vs %s\n', joint_pairs{pair_i}{1}, joint_pairs{pair_i}{2});
-    round([fk(1:3,4) fkb(1:3,4)*1000],8)
-    %diff = fk(1:3,4) - fkb(1:3,4)*1000
-    fprintf('Diff norm = %f\n', norm(fk(1:3,4) - fkb(1:3,4)*1000));
+    fkus = FK_space(robot, eg_angles, 'JointNum', joint_pairs{pair_i}{3});
+    fkb(1:3, 4) = fkb(1:3, 4) * 1000;
+    fprintf('\n%s vs %s vs %d\n', joint_pairs{pair_i}{1}, joint_pairs{pair_i}{2}, joint_pairs{pair_i}{3});
+    round([fk(1:3,4) fkb(1:3,4) fkus(1:3,4)],8)
+    fprintf('Diff norm = %f\n', norm(fk(1:3,4) - fkb(1:3,4)));
+    assert(iseye(inv(fkus) * fk));
+    fk_a_b_norm(pair_i) = round(norm(fk(1:3, 4) - fkb(1:3, 4)), 8);
 end
 
 
