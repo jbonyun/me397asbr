@@ -10,8 +10,8 @@ function vec = unskewsym(ss)
 
     if all(size(ss) == [3 3])
         % Assert that it is indeed skew-symmetric.
-        assert(all(abs(triu(ss) - -triu(ss')) < 1e-9, 'all'), 'Not skew-symmetric because not negative-mirrored across diagonal');
-        assert(all(diag(ss) == 0),'Not skew-symmetric because diagonal not 0');
+        assert(all(abs(triu(ss) - -triu(ss')) < 1e-12, 'all'), 'Not skew-symmetric because not negative-mirrored across diagonal');
+        assert(all(abs(diag(ss)) < 1e-15, 'all'),'Not skew-symmetric because diagonal not 0');
     
         vec = zeros(3,1,'like',ss);
         vec(1, 1) = ss(3, 2);
