@@ -46,7 +46,7 @@ kuka.addBody(link, sprintf('L%d', i+1))
 % because we know and like how we differ in terms of orientation.
 
 test_kuka_examples;
-eg_i = 9;
+eg_i = 5;
 eg_angles = deg2rad(joints(eg_i,:));
 %eg_angles = zeros(1,7);
 
@@ -75,7 +75,36 @@ for pair_i = 1:numel(joint_pairs)
     fk_a_b_norm(pair_i) = round(norm(fk(1:3, 4) - fkb(1:3, 4)), 8);
 end
 
+%% Compare J_space
 
+eg_indices = [2];
+for eg_index = 1:numel(eg_indices)
+    eg_i = eg_indices(eg_index);
+    eg_angles = deg2rad(joints(eg_i,:));
+    %for pair_i = 1:numel(joint_pairs)
+    for pair_i = 8:8
+        Ja = J_toolbox(kuka, eg_angles, joint_pairs{pair_i}{1});
+        Jb = J_toolbox(kuka_b, eg_angles, joint_pairs{pair_i}{2});
+        Jb = J_m_to_mm(Jb);
+        Jc = J_space(robot, eg_angles, 'JointNum', joint_pairs{pair_i}{3});
+        %fkb(1:3, 4) = fkb(1:3, 4) * 1000;
+        fprintf('\n%s vs %s vs %d\n', joint_pairs{pair_i}{1}, joint_pairs{pair_i}{2}, joint_pairs{pair_i}{3});
+        round(Ja-Jb,5)
+        J_a_b_norm(pair_i) = round(norm(Ja-Jb),8);
+        %assert(J_a_b_norm(pair_i) == fk_a_b_norm(pair_i));
+        %assert(all(round(Ja-Jb,8)==0,'all'));
+        %round([fk(1:3,4) fkb(1:3,4) fkus(1:3,4)],8)
+        %fprintf('Diff norm = %f\n', norm(fk(1:3,4) - fkb(1:3,4)));
+        %assert(iseye(inv(fkus) * fk));
+    end    
+end
+%% temp
+pair_i = 8;
+Ja = round(J_toolbox(kuka, eg_angles, joint_pairs{pair_i}{1}),5)
+Jb = J_toolbox(kuka_b, eg_angles, joint_pairs{pair_i}{2});
+Jb = round(J_m_to_mm(Jb),5)
+Jc = round(J_space(robot, eg_angles, 'JointNum', joint_pairs{pair_i}{3}),5)
+Jcbody = round(J_body(robot, eg_angles),5)
 %% Functions
 % Code in cells above can find this, whether this cell has been run or not.
 
@@ -86,6 +115,13 @@ function ans = FK_toolbox(robot, joint_angles, frame_name)
     ans = robot.getTransform(config, frame_name);
 end
 
+function ans = J_toolbox(robot, joint_angles, frame_name)
+    config = robot.randomConfiguration();
+    ans=num2cell(joint_angles);
+    [config.JointPosition]=ans{:};
+    ans = robot.geometricJacobian(config, frame_name);
+end
+
 function in_mm = frame_m_to_mm(frame_in_m)
     in_mm = frame_in_m;
     in_mm(4:6,:) = frame_in_m(4:6,:)*1000;
@@ -94,4 +130,9 @@ end
 function in_mm = transform_m_to_mm(trans_in_m)
     in_mm = trans_in_m;
     in_mm(1:3,4) = trans_in_m(1:3,4)*1000;
+end
+
+function in_mm = J_m_to_mm(J_in_m)
+    in_mm = J_in_m;
+    in_mm(4:6,:) = in_mm(4:6,:) * 1000;
 end
