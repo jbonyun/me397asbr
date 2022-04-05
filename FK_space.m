@@ -16,6 +16,7 @@ function end_frame = FK_space(robot, joint_angles, varargin)
     addRequired(p, 'robot'); 
     addRequired(p, 'joint_angles'); 
     addParameter(p, 'DoPlot', false);
+    addParameter(p, 'JointNum', nan);
     parse(p, robot, joint_angles, varargin{:});
     args = p.Results;
 
@@ -23,6 +24,11 @@ function end_frame = FK_space(robot, joint_angles, varargin)
         n = numel(joint_angles);
     else
         n = size(joint_angles,1);
+    end
+    if isnan(args.JointNum)
+        maxn = n;
+    else
+        maxn = args.JointNum;
     end
 
     if args.DoPlot
@@ -36,7 +42,7 @@ function end_frame = FK_space(robot, joint_angles, varargin)
     end
 
     cumulative_transform = [eye(3) [0; 0; 0]; 0 0 0 1];
-    for i = 1:n
+    for i = 1:maxn
         skew_s = skewsym(robot.screw(:, i));
         cumulative_transform = cumulative_transform * expm(skew_s * joint_angles(i));
         if args.DoPlot
@@ -47,7 +53,12 @@ function end_frame = FK_space(robot, joint_angles, varargin)
         end
     end
 
-    end_frame = cumulative_transform * robot.home;
+    if isnan(args.JointNum)
+        end_frame = cumulative_transform * robot.home;
+    else
+        joint_home = [eye(3) robot.offset(args.JointNum,:)'; 0 0 0 1];
+        end_frame = cumulative_transform * joint_home;
+    end
     
     if args.DoPlot
         plot_3d_axis_transform(end_frame, 'ax', gca, 'scale', axis_scale*2);
