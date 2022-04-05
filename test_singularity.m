@@ -1,4 +1,4 @@
-    
+clear;  
 syms x1 x2 x3 x4 x5 x6 x7
 syms d1 d2 d3 d4 d5 real
 
@@ -48,7 +48,12 @@ robot.home = [eye(3,3) [0; 0; d1+d2+d3+d4+d5]; 0 0 0 1];
     end
 
 
-joint_angles=[x1;x2;x3;x4;x5;x6;x7];
+%joint_angles=[x1;x2;x3;0;x5;x6;x7];
+%joint_angles=[x1;0;x3;x4;x5;0;x7]; %x2=0,x6=0
+%joint_angles=[x1;pi/2;x3;0;x5;x6;x7]; %x2=pi/2,x4=0
+%joint_angles=[x1;x2;x3;pi/2;0;0;x7];
+%joint_angles=[x1;x2;0;x4;pi/2;0;x7]; %x3=0 x5=pi/2,x6=0
+joint_angles=[x1;0;-pi/2;x4;0;pi/2;x7]; %x2=0,x3=-pi/2,x5=0,x6=pi/2
 %joint_angles=[0;0;0;0;0;0;0];
 %joint_angles=[10;0;10;10;10;0;10];
 J = sym('a%d%d',[6,7]);
@@ -61,13 +66,8 @@ for i = 2:robot.dof
 % Update running product of FK of joints we have passed
     prod_expon = prod_expon * expm_sym(robot.screw(:, i) , joint_angles(i));
 end
-%%
-for i=1:7
-
-    J(:,i);
-    robot.screw(:,i);
-end
+rank(J)
 %%
 J
 rank(J)
-solve ('det(J*J'=0')
+

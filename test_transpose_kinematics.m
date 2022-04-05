@@ -1,4 +1,3 @@
-clear;
 syms x1 x2 x3 x4 x5 x6 x7
 syms d1 d2 d3 d4 d5 real
 
@@ -17,6 +16,16 @@ robot.home = [eye(3,3) [0; 0; 1180]; 0 0 0 1];
         ];
     % In home position, the location of the center of each joint, in mm, in
     % world coordinates (center of base on table).
+
+%     robot.offset = [
+%         0 0 0;
+%         0 0 d1;
+%         0 0 0;
+%         0 0 d1+d2+d3;
+%         0 0 0;
+%         0 0 d1+d2+d3+d4+d5;
+%         0 0 0;
+%         ];
 
     robot.offset = [
         0 0 0;
@@ -40,9 +49,11 @@ robot.home = [eye(3,3) [0; 0; 1180]; 0 0 0 1];
         robot.bscrew(:, i) = adjoint_transform(inv(robot.home)) * robot.screw(:, i);
     end
 
-
-%joint_angles=[0.5;0.5;0.5;0.5;0.5;0.5;0.5];
-joint_angles=[0.6;0.6;0.6;0.6;0.6;0.6;0.6];
+%joint_angles=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
+%joint_angles=[0;0;0;0;0;0;0];
+%joint_angles=[10;0;10;10;10;0;10];
+%joint_angles=[1,1,1,1,1,1,1];
+joint_angles=[0.2;0.2;0.2;0.2;0.2;0.2;0.2];
 J = sym('a%d%d',[6,7]);
 J(:, 1) = robot.screw(:, 1);
 prod_expon = expm_sym(robot.screw(:, 1) , joint_angles(1));
@@ -52,42 +63,33 @@ for i = 2:robot.dof
     prod_expon = prod_expon * expm_sym(robot.screw(:, i) , joint_angles(i));
 end
 
-end_fram=FK_space_sym(robot,joint_angles);
+end_fram=FK_space_sym(robot,joint_angles)
+
+ %%
 
 
-%%
-kuka = importrobot('iiwa14.urdf');
-config = homeConfiguration(kuka);
-
-
-    joint_angle=[0.2,0.2,0.2,0.2,0.2,0.2,0.2];
-    for i=1:7
-            config(i).JointPosition = double(joint_angle(i));
-    end
-    show(kuka,config);
-    %joint_angle=[0.3,0.3,0.3,0.3,0.3,0.3,0.3];
-    joint_angle=joint_angle'
-    i=0;
-    [skew_b,angle]=logmatirxs(inv(FK_space(robot,joint_angle))*end_fram);
-    angle=vpa(angle,4);
-    twist_b = skew_b*angle
-    while norm(twist_b(1:3))>0.05 || norm(twist_b(4:6))>0.05
-        Jb=J_body(robot, joint_angle);
-        J_daggr=dagger_J(Jb,7,6);
-        joint_angle=joint_angle+ J_daggr*twist_b
+    q=[0.19;0.19;0.19;0.19;0.1;0.1;0.1];
+    Xd=trans2vector(end_fram);
+    Xd=vpa(Xd,4)
+    transform=FK_space(robot,q);
+    Xe=trans2vector(transform);
+    Xe=vpa(Xe,4)
+    err=Xd-Xe;
+    V = diag([1 1 1 2 2 2]);
+    %U =[1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1; 1 1 1 1 1 1];
+    U =[1 0 0 0 0 0;0 1 0 0 0 0 ;0 0 1 0 0 0;0 0 0 1 0 0;0 0 0 0 1 0;0 0 0 0 0 1];
+    K=U*V*U';
+    %A=pascal(6);
+    while norm(err)>1
+        Jacobian=J_body_sym(robot,q);
+        q_dot=transpose(Jacobian)*K*err;
+        q=q+q_dot*0.0000001
+        transform=FK_space_sym(robot,q);
+        Xe=trans2vector(transform);
+        Xe=vpa(Xe,4);
+        err=Xd-Xe;
+        norm(err)
+        %V=0.5*err'*K*err;
+        %V_dot=-err'*K*(Jacobian*Jacobian')*K*err;  % negative
         
-        for i=1:7
-            config(i).JointPosition = double(joint_angle(i));
-        end
-        show(kuka,config);
-        
-        i=i+1;
-        [skew_b,angle]=logmatirxs(inv(FK_space(robot,joint_angle))*end_fram);
-        angle=vpa(angle,4);
-        twist_b = skew_b*angle 
     end
-
-
-
-
-
