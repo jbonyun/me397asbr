@@ -25,6 +25,27 @@ for i_test_cases = 1:numel(test_cases)
     assert(errb < 1e-7, 'Body is not transformed space');
 end
 
+%% Test Jacobian J_space function against Matlab Robotics Toolbox
+% Function robot.geometricJacobian should be comparable.
+% It reports Jacobian for the given end effector name.
+
+% TODO: THIS HAS NOT BEEN MADE TO WORK YET.
+
+% Load the robot from the Matlab built-in set.
+kuka = loadrobot('kukaIiwa14');
+% Prepare an array of structs that can be used for the robot config
+config = randomConfiguration(kuka);
+
+eg_indices = [5];
+for eg_i = 1:numel(eg_indices)
+    eg_index = eg_indices(eg_i);
+    joint_angles = deg2rad(joints(:, eg_index));
+    ans = num2cell(joint_angles);
+    [config.JointPosition] = ans{:};
+    Jmatlab = kuka.geometricJacobian(config, 'iiwa_link_ee');
+    Js = J_space(robot, joint_angles);
+end
+
 %% Test Jacobian function J_space via finite differences
 % Since the (geometric) Jacobian is partial derivative of the angle and
 % translation of the end effector for a change in a joint's angle,
