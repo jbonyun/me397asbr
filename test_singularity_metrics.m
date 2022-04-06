@@ -31,10 +31,9 @@ mu2 = J_condition(Js);
 assert(any(isinf(mu2)), 'At least one Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
 assert(any(mu3 == 0), 'At least one volume should be zero for singular position');
+disp('All good');
 
 %% Test singular position: A2,A6 are zero; 1/3 are collinear, 5/7 are collinear.
-% Uh, no, this is apparently not singular...
-%   TODO: figure out if this ought to be singular or not.
 % Yuewan's symbolic says this is singular
 
 eg_angles = rand_angles();
@@ -47,23 +46,22 @@ mu2 = J_condition(Js);
 assert(any(isinf(mu2)), 'At least one Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
 assert(any(mu3 == 0), 'At least one volume should be zero for singular position');
+disp('All good');
 
-%% Test singular position: A3, A4, A5 are zero -- 2/4/6 are parallel and coplanar + 3/5 are colinear.
-% Uh, no, this is apparently not singular...
-%   TODO: figure out if this ought to be singular or not.
+%% Test non-singular position: 3,4,5=0
 %   Yuewan's symbolic works says rank is still 6, so not singular.
-%   I guess I didn't apply rules right.
 
 eg_angles = rand_angles();
 eg_angles([3,4,5]) = 0;
 Js = J_space(robot, eg_angles);
 
 mu1 = J_isotropy(Js);
-assert(any(isinf(mu1)), 'At least one Isotropy should be infinite for singular position');
+assert(all(~isinf(mu1)), 'Isotropy should both be finite for non-singular position');
 mu2 = J_condition(Js);
-assert(any(isinf(mu2)), 'At least one Condition Number should be infinite for singular position');
+assert(all(~isinf(mu2)), 'Condition Number should both be finite for non-singular position');
 mu3 = J_ellipsoid_volume(Js);
-assert(any(mu3 == 0), 'At least one volume should be zero for singular position');
+assert(all(mu3 ~= 0), 'Ellipse volumes should both be non-zero for non-singular position');
+disp('All good');
 
 %% Test singular poses in our examples from real robot
 % 1 is close
