@@ -5,6 +5,9 @@ test_kuka_examples;
 
 rand_angles = @() rand(7,1) * 2 * pi;
 
+msg_fmt = '%-12s   %12s  %60s   %12.4g %12.4g %12.4g   OK\n';
+fprintf('%-12s   %12s  %60s   %12s %12s %12s %4s\n', 'Scenario', 'Singular?', 'Angles', 'Isotropy', 'Condition', 'Volume', 'Result');
+
 %% Test singular position: straight up, zero position; 1/3/5/7 are collinear
 % This is actually only 4 DOF, I think. Maybe less.
 
@@ -17,7 +20,7 @@ mu2 = J_condition(Js);
 assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
 assert(mu3 == 0, 'Volume should be zero for singular position');
-disp('Zero pos: all good');
+fprintf(msg_fmt, 'Zero pos', 'singular', mat2str(eg_angles, 4), mu1, mu2, mu3);
 
 %% Test singular position: A2,A4,A6 are zero -- so still straight up; 1/3/5/7 are collinear
 % This is actually only 4 DOF, I think. Maybe less.
@@ -32,7 +35,7 @@ mu2 = J_condition(Js);
 assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
 assert(mu3 == 0, 'Volume should be zero for singular position');
-disp('Straight up: all good');
+fprintf(msg_fmt, 'Straight up', 'singular', mat2str(eg_angles, 4), mu1, mu2, mu3);
 
 %% Test singular position: A2,A6 are zero; 1/3 are collinear, 5/7 are collinear.
 % Yuewan's symbolic says this is singular
@@ -47,7 +50,7 @@ mu2 = J_condition(Js);
 assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
 assert(mu3 == 0, 'Volume should be zero for singular position');
-disp('Singular 2/6=0: all good');
+fprintf(msg_fmt, '2/6 = 0', 'singular', mat2str(eg_angles, 4), mu1, mu2, mu3);
 
 %% Test singular position: 3,4,5=0
 
@@ -61,7 +64,7 @@ mu2 = J_condition(Js);
 assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
 assert(mu3 == 0, 'Volume should be zero for singular position');
-disp('Non-singular 3/4/5=0: all good');
+fprintf(msg_fmt, '3/4/5 = 0', 'singular', mat2str(eg_angles, 4), mu1, mu2, mu3);
 
 %% Test singular poses in our examples from real robot
 % 1, 2, 3 are so close that we should identify them as singular
@@ -76,8 +79,8 @@ for eg_i = 1:numel(eg_rows)
     assert(isinf(mu2), 'Condition Number should be infinite for singular position');
     mu3 = J_ellipsoid_volume(Js);
     assert(mu3 == 0, 'Volume should be zero for singular position');
+    fprintf(msg_fmt, sprintf('Eg Pose %d', eg_rows(eg_i)), 'singular', mat2str(eg_angles, 4), mu1, mu2, mu3);
 end
-disp('Singular: all good');
 
 %% Test non-singular poses in our examples from real robot
 eg_rows = [4 5 6 7 12 13 14 15 16];
@@ -90,8 +93,8 @@ for eg_i = 1:numel(eg_rows)
     assert(all(~isinf(mu2)), 'Condition Number be finite for non-singular position');
     mu3 = J_ellipsoid_volume(Js);
     assert(all(mu3 > 0), 'Ellipse volume should be non-zero for non-singular position');
+    fprintf(msg_fmt, sprintf('Eg Pose %d', eg_rows(eg_i)), 'non-singular', mat2str(eg_angles, 4), mu1, mu2, mu3);
 end
-disp('Non-singular: all good');
 
 %% Test non-singular poses with pure random angles.
 % In theory we could accidentally get a random singular position. But that
@@ -124,11 +127,21 @@ for delta = 0:0.0001:0.0100
     mu1s = [mu1s; J_isotropy(Js)];
     mu2s = [mu2s; J_condition(Js)];
     mu3s = [mu3s; J_ellipsoid_volume(Js)];
+    %fprintf(msg_fmt, sprintf('Step'), 'non-singular', mat2str(eg_pose, 4), mu1s(end), mu2s(end), mu3s(end));
 end
 assert(issorted(mu1s, 'descend'), 'Isotropy did not diminish while moving away from singularity');
 assert(issorted(mu2s, 'descend'), 'Condition number did not diminish while moving away from singularity');
 assert(issorted(mu3s, 'ascend'), 'Ellipsoid volume did not increase while moving away from singularity');
-disp('Slope: all good');
+disp('Slope v1: all good');
+
+figure;
+subplot(3,1,1);
+plot(0:0.0001:0.0100, mu1s); title('Isotropy near singularity'); xlabel('Rads from singularity'); ylabel('Isotropy');
+subplot(3,1,2);
+plot(0:0.0001:0.0100, mu2s); title('Condition Number near singularity'); xlabel('Rads from singularity'); ylabel('Condition Num');
+subplot(3,1,3);
+plot(0:0.0001:0.0100, mu3s); title('Ellipsoid Volume near singularity'); xlabel('Rads from singularity'); ylabel('Volume');
+sgtitle('Metric Slope Near Zero Singularity');
 
 %% Another metric slope near singularity
 
@@ -149,3 +162,12 @@ assert(issorted(mu1s, 'descend'), 'Isotropy did not diminish while moving away f
 assert(issorted(mu2s, 'descend'), 'Condition number did not diminish while moving away from singularity');
 assert(issorted(mu3s, 'ascend'), 'Ellipsoid volume did not increase while moving away from singularity');
 disp('Slope v2: all good');
+
+figure;
+subplot(3,1,1);
+plot(0:0.0001:0.0100, mu1s); title('Isotropy near singularity'); xlabel('Rads from singularity'); ylabel('Isotropy');
+subplot(3,1,2);
+plot(0:0.0001:0.0100, mu2s); title('Condition Number near singularity'); xlabel('Rads from singularity'); ylabel('Condition Num');
+subplot(3,1,3);
+plot(0:0.0001:0.0100, mu3s); title('Ellipsoid Volume near singularity'); xlabel('Rads from singularity'); ylabel('Volume');
+sgtitle('Metric Slope Near 2/4/6=0 Singularity');
