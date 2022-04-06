@@ -8,7 +8,8 @@ test_kuka_examples;
 % From W7-L1, pg 13:
 %   Jb = [Ad Tbs] Js
 %   Js = [Ad Tsb] Jb
-test_cases = [1];  %1:size(joints,1);
+fprintf('%7s  %12s %12s\n', 'Case #', 'S vs Trans B', 'B vs Trans S');
+test_cases = 1:16; %[1];  %1:size(joints,1);
 for i_test_cases = 1:numel(test_cases)
     i = test_cases(i_test_cases);
     joint_angles = joints(i,:);
@@ -21,9 +22,11 @@ for i_test_cases = 1:numel(test_cases)
     diffb = Jb - adjoint_transform(Tbs) * Js;
     errs = norm(diffs);
     errb = norm(diffb);
+    fprintf('Case %2d  %12g %12g\n', i, errs, errb);
     assert(errs < 1e-7, 'Space is not transformed body');
     assert(errb < 1e-7, 'Body is not transformed space');
 end
+disp('All good');
 
 %% Test Jacobian J_space function against Matlab Robotics Toolbox
 % Function robot.geometricJacobian should be comparable.
