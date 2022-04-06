@@ -10,10 +10,9 @@ function end_frame = FK_space(robot, joint_angles, varargin)
     %              the space frame to the final location and orientation.
     % Jeff Bonyun (jb79332), jbonyun@utexas.edu, 20220322
     % On behalf of the Sun/Bonyun team for ME397 ASBR, Spring 2022.
-    % Source: [none yet]
+    % Source: Alambeigi, F. ASBR Lecture Notes. 2022, W6-L1, p. 10.
 
     p = inputParser;
-    %isAxes = @(x) isa(x, 'matlab.graphics.axis.Axes');
     addRequired(p, 'robot'); 
     addRequired(p, 'joint_angles'); 
     addParameter(p, 'DoPlot', false);
