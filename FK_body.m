@@ -11,7 +11,7 @@ function end_frame = FK_body(robot, joint_angles, varargin)
     %              the body frame to the origin of the space frame.
     % Jeff Bonyun (jb79332), jbonyun@utexas.edu, 20220322
     % On behalf of the Sun/Bonyun team for ME397 ASBR, Spring 2022.
-    % Source: [none yet]
+    % Source: Alambeigi, F. ASBR Lecture Notes. 2022, W6-L2, p. 6.
 
     p = inputParser;
     addRequired(p, 'robot'); 
@@ -19,16 +19,6 @@ function end_frame = FK_body(robot, joint_angles, varargin)
     addParameter(p, 'DoPlot', false);
     parse(p, robot, joint_angles, varargin{:});
     args = p.Results;
-
-    if args.DoPlot
-        axis_scale = max(max(robot.offset)) / 20;
-        figure;
-        axis equal;
-        view(135, 7);
-        xlabel('x'); ylabel('y'); zlabel('z');
-        plot_3d_axis([0 0 0]', [1 0 0]', [0 1 0]', [0 0 1]', 'scale', axis_scale*2);
-        hold on;
-    end
 
 %    cumulative_transform = [eye(3) [0; 0; 0]; 0 0 0 1];
 %     for i = 1:robot.dof
@@ -42,18 +32,25 @@ function end_frame = FK_body(robot, joint_angles, varargin)
 %             plot_joint_axis(joint_frame, robot.axes(i,:)', axis_scale*2);
 %         end
 %     end
+
+    % Calculate the full transform to the end effector.
     cumulative_transform = [eye(3) [0; 0; 0]; 0 0 0 1];
     for i = 1:robot.dof       
          b_screw = robot.bscrew(:, i);
          skew_b_screw = skewsym(b_screw);
          cumulative_transform = cumulative_transform * expm(skew_b_screw * joint_angles(i));
-         % Which way?
-         % should we count down from dof to 1 too?
-         % cumulative_transform = expm(skew_b_screw * joint_angles(i)) * cumulative_transform;
     end
     end_frame = robot.home * cumulative_transform;
 
+    % If we are plotting, do that. Including the frames for each joint.
     if args.DoPlot
+        axis_scale = max(max(robot.offset)) / 20;
+        figure;
+        axis equal;
+        view(135, 7);
+        xlabel('x'); ylabel('y'); zlabel('z');
+        plot_3d_axis([0 0 0]', [1 0 0]', [0 1 0]', [0 0 1]', 'scale', axis_scale*2);
+        hold on;
         for i = 1:robot.dof
             cumulative_transform = [eye(3) [0; 0; 0]; 0 0 0 1];
             for j = i:robot.dof
