@@ -13,19 +13,24 @@ function [mu3] = J_ellipsoid_volume(J)
     % We assume it is half translation and half orientation, like our
     % typical 6-degree world.
     assert(mod(size(J,1),2) == 0, 'J matrix should have even number of rows');
-    % Find the A matrix
-    A = J * J';
-    % Find eigenvalues of A
-    eval = eig(A);
-    % Special handling if singular.
-    if min(eval) < 0
-        if min(eval) < -1e-9
-            % Negative definite. Not expecting this. I guess an error.
-            error('Jacobian was negative-definite, with negative eigenvalue');
-        else
-            % Probably just numerically unstable, but really a zero eval
-            mu3 = 0;
-        end
+    if rank(J) < 6
+        % Singular. Report exact values for singularity.
+        mu3 = 0;
     else
-        mu3 = sqrt(prod(eval));
+        % Find the A matrix
+        A = J * J';
+        % Find eigenvalues of A
+        eval = eig(A);
+        % Special handling if singular.
+        if min(eval) < 0
+            if min(eval) < -1e-9
+                % Negative definite. Not expecting this. I guess an error.
+                error('Jacobian was negative-definite, with negative eigenvalue');
+            else
+                % Probably just numerically unstable, but really a zero eval
+                mu3 = 0;
+            end
+        else
+            mu3 = sqrt(prod(eval));
+        end
     end

@@ -12,11 +12,11 @@ eg_angles = [0 0 0 0 0 0 0];
 Js = J_space(robot, eg_angles);
 
 mu1 = J_isotropy(Js);
-assert(mu1 > 1e9, 'Isotropy should be infinite for singular position');
+assert(isinf(mu1), 'Isotropy should be infinite for singular position');
 mu2 = J_condition(Js);
-assert(mu2 > 1e14, 'Condition Number should be infinite for singular position');
+assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
-assert(mu3 < 1e-10, 'Volume should be zero for singular position');
+assert(mu3 == 0, 'Volume should be zero for singular position');
 disp('Zero pos: all good');
 
 %% Test singular position: A2,A4,A6 are zero -- so still straight up; 1/3/5/7 are collinear
@@ -27,11 +27,11 @@ eg_angles([2,4,6]) = 0;
 Js = J_space(robot, eg_angles);
 
 mu1 = J_isotropy(Js);
-assert(mu1 > 1e9, 'Isotropy should be infinite for singular position');
+assert(isinf(mu1), 'Isotropy should be infinite for singular position');
 mu2 = J_condition(Js);
-assert(mu2 > 1e14, 'Condition Number should be infinite for singular position');
+assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
-assert(mu3 < 1e-10, 'Volume should be zero for singular position');
+assert(mu3 == 0, 'Volume should be zero for singular position');
 disp('Straight up: all good');
 
 %% Test singular position: A2,A6 are zero; 1/3 are collinear, 5/7 are collinear.
@@ -42,28 +42,26 @@ eg_angles([2,6]) = 0;
 Js = J_space(robot, eg_angles);
 
 mu1 = J_isotropy(Js);
-assert(mu1 > 1e9, 'Isotropy should be infinite for singular position');
+assert(isinf(mu1), 'Isotropy should be infinite for singular position');
 mu2 = J_condition(Js);
-assert(mu2 > 1e14, 'Condition Number should be infinite for singular position');
+assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
-assert(mu3 < 2e1, 'Volume should be zero for singular position');
+assert(mu3 == 0, 'Volume should be zero for singular position');
 disp('Singular 2/6=0: all good');
 
-%% Test non-singular position: 3,4,5=0
-%   Yuewan's symbolic works says rank is still 6, so not singular.
-%   I'm double-checking with her becuase it seems to have rank 5 for me...
+%% Test singular position: 3,4,5=0
 
 eg_angles = rand_angles();
 eg_angles([3,4,5]) = 0;
 Js = J_space(robot, eg_angles);
 
 mu1 = J_isotropy(Js);
-%assert(all(~isinf(mu1)), 'Isotropy should finite for non-singular position');
+assert(isinf(mu1), 'Isotropy should be infinite for singular position');
 mu2 = J_condition(Js);
-%assert(all(~isinf(mu2)), 'Condition Number be finite for non-singular position');
+assert(isinf(mu2), 'Condition Number should be infinite for singular position');
 mu3 = J_ellipsoid_volume(Js);
-%assert(all(mu3 ~= 0), 'Ellipse volume should be non-zero for non-singular position');
-%disp('Non-singular 3/4/5=0: all good');
+assert(mu3 == 0, 'Volume should be zero for singular position');
+disp('Non-singular 3/4/5=0: all good');
 
 %% Test singular poses in our examples from real robot
 % 1, 2, 3 are so close that we should identify them as singular
@@ -73,11 +71,11 @@ for eg_i = 1:numel(eg_rows)
     eg_angles = deg2rad(joints(eg_rows(eg_i), :));
     Js = J_space(robot, eg_angles);
     mu1 = J_isotropy(Js);
-    assert(mu1 > 1e9, 'Isotropy should be infinite for singular position');
+    assert(isinf(mu1), 'Isotropy should be infinite for singular position');
     mu2 = J_condition(Js);
-    assert(mu2 > 1e14, 'Condition Number should be infinite for singular position');
+    assert(isinf(mu2), 'Condition Number should be infinite for singular position');
     mu3 = J_ellipsoid_volume(Js);
-    assert(mu3 < 1e1, 'Volume should be zero for singular position');
+    assert(mu3 == 0, 'Volume should be zero for singular position');
 end
 disp('Singular: all good');
 

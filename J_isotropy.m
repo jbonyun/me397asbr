@@ -10,21 +10,26 @@ function [mu1] = J_isotropy(J)
 
     % Make sure the J matrix makes sense
     assert(mod(size(J,1),2) == 0, 'J matrix should have even number of rows');
-    % Find the A matrix
-    A = J * J';
-    % Find eigenvalues of A
-    eval = eig(A);
-    % Special handling if singular.
-    if min(eval) < 0
-        if min(eval) < -1e-9
-            % Negative definite. Not expecting this. I guess an error.
-            error('Jacobian was negative-definite, with negative eigenvalue: %g', min(eval));
-        else
-            % Probably just numerically unstable, but really a zero eval
-            mu1 = inf;
-        end
+    if rank(J) < 6
+        % Singular. Report exact values for singularity.
+        mu1 = inf;
     else
-        emax = max(eval);
-        emin = min(eval);
-        mu1 = sqrt(emax) ./ sqrt(emin);
+        % Find the A matrix
+        A = J * J';
+        % Find eigenvalues of A
+        eval = eig(A);
+        % Special handling if singular.
+        if min(eval) < 0
+            if min(eval) < -1e-9
+                % Negative definite. Not expecting this. I guess an error.
+                error('Jacobian was negative-definite, with negative eigenvalue: %g', min(eval));
+            else
+                % Probably just numerically unstable, but really a zero eval
+                mu1 = inf;
+            end
+        else
+            emax = max(eval);
+            emin = min(eval);
+            mu1 = sqrt(emax) ./ sqrt(emin);
+        end
     end
