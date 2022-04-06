@@ -15,7 +15,7 @@ for i_test_cases = 1:numel(test_cases)
     Js = J_space(robot, joint_angles);
     Jb = J_body(robot, joint_angles);
     Tsb = FK_space(robot, joint_angles);
-    Tbs = FK_body(robot, joint_angles);
+    Tbs = inv(Tsb);
 
     diffs = Js - adjoint_transform(Tsb) * Jb;
     diffb = Jb - adjoint_transform(Tbs) * Js;
