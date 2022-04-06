@@ -34,10 +34,9 @@ end
 
 %% Test FK_body
 
-do_plot = true;
-i_set = [5];
+i_set = 1:16;
 for i = 1:numel(i_set)
-    fk_pose = FK_body(robot, deg2rad(joints(i_set(i),:)'), 'DoPlot', do_plot);
+    fk_pose = FK_body(robot, deg2rad(joints(i_set(i),:)'));
     if do_plot
         title(sprintf('Joint Frames; Body Form\nConfig %d', i_set(i)));
     end
