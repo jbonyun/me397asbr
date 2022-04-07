@@ -19,7 +19,7 @@ function zyz = rot2zyz(rot, delta)
 
     if iseye(rot)
         disp('Warning: rot2zyz is choosing arbitrary Z rotation angles because rot is identity');
-        zyz = [0 0 0];
+        zyz = [0 0 0]';
     else
         % Notes use phi, theta, psi
         % I am using alpha, beta, gamma to match textbook.
