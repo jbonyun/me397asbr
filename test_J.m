@@ -33,6 +33,7 @@ disp('All good');
 % It reports Jacobian for the given end effector name.
 
 % TODO: THIS HAS NOT BEEN MADE TO WORK YET.
+% See work in "iiwa_tree"
 
 % Load the robot from the Matlab built-in set.
 kuka = loadrobot('kukaIiwa14');
@@ -49,6 +50,7 @@ for eg_i = 1:numel(eg_indices)
     Js = J_space(robot, joint_angles);
 end
 
+
 %% Test Jacobian function J_space via finite differences
 % Since the (geometric) Jacobian is partial derivative of the angle and
 % translation of the end effector for a change in a joint's angle,
@@ -56,6 +58,9 @@ end
 % frame changes by the jacobian.
 
 % TODO: THIS IS STILL NOT WORKING.
+% The "analytic jacobian" is a true derivative
+% The "geometric jacobian" (what we have) is change in geo params, which I
+% guess isn't the same thing. Meaning we can't do finite differences.
 
 delta = 0.01;
 deltas = eye(robot.dof) * delta;
@@ -71,8 +76,8 @@ for i_test_cases = 1:numel(test_cases)
         %dpose = (trans2screw(pose) - trans2screw(pose_init)) / delta;
         % Change from one frame to another
         dpose = inv(pose_init) * pose;
-        dposescrew = trans2screw(dpose, delta);
-        err = J(:, j) - dposescrew;
+        dposetwist = trans2vector(dpose) / delta;
+        err = J(:, j) - dposetwist;
         fprintf('Config %02d   Axis %1d  Linear err %f\n', i, j, norm(err(1:3)));
     end
 end
