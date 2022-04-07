@@ -65,6 +65,16 @@ Js = J_space(robot, joint_angles);
 Js_shouldbe = robot.screw;
 assert(all(abs(Js - Js_shouldbe) < 1e-9, 'all'));
 
+% When the second last joint moves, the Jacobian's last column will change.
+joint_angles = [0 0 0 0 0 pi/2 0];
+rot = zyz2rot(robot.axes(6,:) * pi/2); % rotated so x and z are swapped
+w = rot * robot.axes(7,:)'; %[1 0 0]' % now it points +x instead of +z
+q = trans2translation(FK_space(robot, joint_angles, 'JointNum', 7));
+Js7_shouldbe = screwgeo2twist(w, q);
+Js = round(J_space(robot, joint_angles),12);
+Js7 = Js(:,7);
+assert(all(abs(Js7 - Js7_shouldbe) < 1e-9, 'all'));
+
 
 %% Test Jacobian J_space function against Matlab Robotics Toolbox
 % Function robot.geometricJacobian should be comparable.
