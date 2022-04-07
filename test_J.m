@@ -28,6 +28,25 @@ for i_test_cases = 1:numel(test_cases)
 end
 disp('All good');
 
+%% Test Jacobian function J_space with a numerical example
+
+dummyrobot.dof = 4;
+dummyrobot.screw = [[0; 0; 1; 0; 0.2; 0.2], ...
+                    [1; 0; 0; 2; 0; 3], ...
+                    [0; 1; 0; 0; 2; 1], ...
+                    [1; 0; 0; 0.2; 0.3; 0.4]];
+joint_angles = [0.2; 1.1; 0.1; 1.2]';
+Js_shouldbe =  [0 0.9801 -0.0901 0.9575
+                0 0.1987 0.4446 0.2849
+                1.0000 0 0.8912 -0.0453
+                0 1.9522 -2.2164 -0.5116
+                0.2000 0.4365 -2.4371 2.7754
+                0.2000 2.9603 3.2357 2.2251];
+
+Js = J_space(dummyrobot, joint_angles);
+assert(all(abs(Js - Js_shouldbe) < 1e-4, 'all'));
+disp('All good');
+
 %% Test Jacobian J_space function against Matlab Robotics Toolbox
 % Function robot.geometricJacobian should be comparable.
 % It reports Jacobian for the given end effector name.
