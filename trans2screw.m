@@ -15,7 +15,7 @@ function [screw, theta] = trans2screw(trans)
     p = trans(1:3, 4);
     assert(isrot(R), 'Not given a valid homogenous transformation matrix because rotation is not a valid rotation matrix');
 
-    if iseye(R)
+    if iseye(R, 1e-5)
         theta = norm(p);
         w = [0; 0; 0];
         v = p / theta;

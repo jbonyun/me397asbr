@@ -17,7 +17,7 @@ function zyz = rot2zyz(rot, delta)
 
     assert(isrot(rot), 'rot must be a valid rotation matrix');
 
-    if iseye(rot)
+    if iseye(rot, 1e-5)
         disp('Warning: rot2zyz is choosing arbitrary Z rotation angles because rot is identity');
         zyz = [0 0 0]';
     else

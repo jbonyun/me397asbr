@@ -11,8 +11,7 @@ function aa = rot2aa(rot)
     assert(isrot(rot), 'rot must be a valid rotation matrix');
 
     % Check for being close to identity matrix.
-    close_to_eye = all(abs(rot - eye(3)) < 1e-10, 'all');
-    if close_to_eye
+    if iseye(rot, 1e-5)
         % When we are rotating by identity the axis doesn't matter and
         % angle about it is 0. But we keep axis a unit vector anyway.
         % Strictly speaking, he says the axis is undefined. I don't think
@@ -38,7 +37,7 @@ function aa = rot2aa(rot)
     end
 
     % Make sure axis is a unit vector
-    assert(abs(norm(w) - 1) < 1e-9);
+    assert(abs(norm(w) - 1) < 1e-5, sprintf('Axis is not a unit vector with norm %f', norm(w)));
 
     % Combine axis and angle into a single output vector of 4x1
     aa = [w; theta];    
