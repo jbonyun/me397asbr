@@ -8,11 +8,11 @@ function end_frame = FK_space_sym(robot, joint_angles)
     % Outputs:
     %   end_frame: 4x4 transformation matrix from the origin of
     %              the space frame to the final location and orientation.
+    % W6-l2 page 4
 
-
-    n = size(joint_angles);
-    cumulative_transform = [eye(3) [0; 0; 0]; 0 0 0 1];
-    for i = 1:n
+    %n=size(joint_angles,2);
+    cumulative_transform = expm_sym(robot.screw(:, 1), joint_angles(1));
+    for i = 2:7
         cumulative_transform = cumulative_transform * expm_sym(robot.screw(:, i), joint_angles(i));
 
     end

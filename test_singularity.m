@@ -53,9 +53,12 @@ robot.home = [eye(3,3) [0; 0; d1+d2+d3+d4+d5]; 0 0 0 1];
 %joint_angles=[x1;pi/2;x3;0;x5;x6;x7]; %x2=pi/2,x4=0
 %joint_angles=[x1;x2;x3;pi/2;0;0;x7];
 %joint_angles=[x1;x2;0;x4;pi/2;0;x7]; %x3=0 x5=pi/2,x6=0
-joint_angles=[x1;0;-pi/2;x4;0;pi/2;x7]; %x2=0,x3=-pi/2,x5=0,x6=pi/2
+%joint_angles=[x1;0;-pi/2;x4;0;pi/2;x7]; %x2=0,x3=-pi/2,x5=0,x6=pi/2
 %joint_angles=[0;0;0;0;0;0;0];
 %joint_angles=[10;0;10;10;10;0;10];
+%joint_angles=[.1;.1;0;0;0;.1;.1];
+%joint_angles=[x1;0;x3;x4;x5;0;x7];
+joint_angles= [4.5417 2.4359 0 0 0 3.7482 5.8714];
 J = sym('a%d%d',[6,7]);
 %%
 J(:, 1) = robot.screw(:, 1);

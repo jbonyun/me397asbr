@@ -1,5 +1,5 @@
 clear;
-syms x1 x2 x3 x4 x5 x6 x7
+syms x1 x2 x3 x4 x5 x6 x7 real
 syms d1 d2 d3 d4 d5 real
 
 robot.home = [eye(3,3) [0; 0; 1180]; 0 0 0 1];
@@ -87,7 +87,27 @@ config = homeConfiguration(kuka);
         twist_b = skew_b*angle 
     end
 
+%%
 
+   joint_angle=[0.2,0.2,0.2,0.2,0.2,0.2,0.2];
+    for i=1:7
+            config(i).JointPosition = double(joint_angle(i));
+    end
 
+    %joint_angle=[0.3,0.3,0.3,0.3,0.3,0.3,0.3];
+    joint_angle=joint_angle'
+    i=0;
+    [skew_b,angle]=logmatirxs(inv(FK_space(robot,joint_angle))*end_fram);
+    angle=vpa(angle,4);
+    twist_b = skew_b*angle
+    while norm(twist_b(1:3))>0.05 || norm(twist_b(4:6))>0.05
+        Jb=J_body(robot, joint_angle);
+        J_daggr=dagger_J(Jb,7,6);
+        joint_angle=joint_angle+J_daggr*twist_b
+        i=i+1;
+        [skew_b,angle]=logmatirxs(inv(FK_space(robot,joint_angle))*end_fram);
+        angle=vpa(angle,4);
+        twist_b = skew_b*angle 
+    end
 
 
