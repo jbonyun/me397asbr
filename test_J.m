@@ -57,6 +57,8 @@ joint_angles = [0 0 0 0 0 0 0];
 Js = J_space(robot, joint_angles);
 Js_shouldbe = robot.screw;
 assert(all(abs(Js - Js_shouldbe) < 1e-9, 'all'));
+joint_angles
+Js
 
 % Zero but with last joint turned
 % Still Jacobian == screw because the last joint doesn't affect Jacobian.
@@ -64,6 +66,8 @@ joint_angles = [0 0 0 0 0 0 pi/2];
 Js = J_space(robot, joint_angles);
 Js_shouldbe = robot.screw;
 assert(all(abs(Js - Js_shouldbe) < 1e-9, 'all'));
+joint_angles
+Js
 
 % When the second last joint moves, the Jacobian's last column will change.
 joint_angles = [0 0 0 0 0 pi/2 0];
@@ -74,6 +78,8 @@ Js7_shouldbe = screwgeo2twist(w, q);
 Js = round(J_space(robot, joint_angles),12);
 Js7 = Js(:,7);
 assert(all(abs(Js7 - Js7_shouldbe) < 1e-9, 'all'));
+joint_angles
+Js
 
 
 %% Test Jacobian J_space function against Matlab Robotics Toolbox
