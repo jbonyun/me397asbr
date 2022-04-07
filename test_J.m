@@ -47,6 +47,25 @@ Js = J_space(dummyrobot, joint_angles);
 assert(all(abs(Js - Js_shouldbe) < 1e-4, 'all'));
 disp('All good');
 
+%% Example poses, carefully reasoned out.
+
+% At zero position
+% Jacobian == screw because all the thetas are 0, so the product of
+% exponentials is the identity, so the adjoint is identity, so the Jacobian
+% columns are just the screw columns.
+joint_angles = [0 0 0 0 0 0 0];
+Js = J_space(robot, joint_angles);
+Js_shouldbe = robot.screw;
+assert(all(abs(Js - Js_shouldbe) < 1e-9, 'all'));
+
+% Zero but with last joint turned
+% Still Jacobian == screw because the last joint doesn't affect Jacobian.
+joint_angles = [0 0 0 0 0 0 pi/2];
+Js = J_space(robot, joint_angles);
+Js_shouldbe = robot.screw;
+assert(all(abs(Js - Js_shouldbe) < 1e-9, 'all'));
+
+
 %% Test Jacobian J_space function against Matlab Robotics Toolbox
 % Function robot.geometricJacobian should be comparable.
 % It reports Jacobian for the given end effector name.
@@ -100,14 +119,3 @@ for i_test_cases = 1:numel(test_cases)
         fprintf('Config %02d   Axis %1d  Linear err %f\n', i, j, norm(err(1:3)));
     end
 end
-
-%% Test Jacobian function J_space
-
-% TODO:
-% Maybe finite differences with some velocities?
-% Maybe a specific numerical example from somewhere?
-% Maybe some thought-out theoretical examples?
-
-%% Test Jacobian function J_body
-
-% TODO: ditto above
