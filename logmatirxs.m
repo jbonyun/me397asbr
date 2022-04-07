@@ -5,6 +5,10 @@ function [screw, angle]=logmatirxs(trans)
          %input tranformation matrix
          %output screw axis and angle
 
+         % TODO: must handle R==eye! W5-L2 p2
+         % TODO: replace with trans2screw, which does the same thing but is
+         %       part of our tested set of functions.
+
          %matirx logarithm of rotations
          rot=trans(1:3,1:3);
          angle=acos((trace(rot)-1)/2);
