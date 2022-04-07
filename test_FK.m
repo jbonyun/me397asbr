@@ -22,7 +22,7 @@ for i = 1:numel(i_set)
     end
     err = norm(fk_pose(1:3, 4)-cart(i_set(i), 1:3)');
     angerr = norm(rad2deg(rot2zyx(fk_pose(1:3,1:3)))-cart(i_set(i), 4:6)');
-    fprintf("Pose %2d   Pos error: %f   Angle error: %f\n", i_set(i), err, angerr);
+    fprintf("Space Frame  Pose %2d   Pos error: %f   Angle error: %f\n", i_set(i), err, angerr);
     if err > 0.10
         disp([fk_pose(1:3, 4) cart(i_set(i), 1:3)']);
     end
@@ -51,3 +51,13 @@ for i = 1:numel(i_set)
         disp([rad2deg(rot2zyx(fk_pose(1:3,1:3))) cart(i_set(i), 4:6)']);
     end
 end
+
+%% Test FK_space and FK_body give same answers
+i_set = 1:16;
+for i = 1:numel(i_set)
+    fk_s = FK_space(robot, deg2rad(joints(i_set(i),:)'));
+    fk_b = FK_body(robot, deg2rad(joints(i_set(i),:)'));
+    err = norm(fk_s - fk_b);
+    assert(err < 1e-12, 'FK_space and FK_body gave different answers');
+end
+disp('All good');
