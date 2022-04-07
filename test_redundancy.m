@@ -68,62 +68,7 @@ for i = 2:robot.dof
 end
 
 end_fram=FK_space_sym(robot,joint_angles)
-%%
-w0=sqrt(det(J*J'));
-q1=joint_angles;
-q1(1)=q1(1)+0.1;
-J_1=J_body(robot,q1);
-w1=sqrt(det(J_1*J_1'));
-q0_dot(1)= (w1-w0)/0.1;
-q0_dot(1)=vpa(q0_dot(1),4)
-%%
-deltq=0.1;
-w0=sqrt(det(J*J'));
-for i=1:7
-    q0=joint_angles;
-    q0(i)=q0(i)+deltq;
-    Ji=J_body(robot,q0);
-    wi=sqrt(det(Ji*Ji'));
-    q0_dot(i)=(wi-w0)/deltq;
-    q0_dot(i)=vpa(q0_dot(i),4);
-end
-q0_dot
 
-
-
-
-%%
-
-   %joint_angle=[0.2,0.2,0.2,0.2,0.2,0.2,0.2];
-    %joint_angle=[0.3,0.3,0.3,0.3,0.3,0.3,0.3];
-    joint_angle=[-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1];
-    joint_angle=joint_angle';
-    i=0;
-    [skew_b,angle]=logmatirxs(inv(FK_space_sym(robot,joint_angle))*end_fram);
-    angle=vpa(angle,4);
-    twist_b = skew_b*angle;
-    deltq=0.1;
-    w0=sqrt(det(J*J'));
-    
-    while norm(twist_b(1:3))>0.05 || norm(twist_b(4:6))>0.05
-        for i=1:7
-            q0=joint_angle;
-            q0(i)=q0(i)+deltq;
-            Ji=J_body(robot,q0);
-            wi=sqrt(det(Ji*Ji'));
-            q0_dot(i)=(wi-w0)/deltq;
-            q0_dot(i)=vpa(q0_dot(i),4)*1e-7;
-        end
-        q0_dot;
-        Jb=J_body(robot, joint_angle);
-        J_daggr=dagger_J(Jb,7,6);
-        joint_angle=joint_angle+J_daggr*twist_b*0.1+(eye(7,7)-J_daggr*Jb)*q0_dot';
-        %joint_angle=joint_angle+J_daggr*twist_b*0.1;
-        i=i+1;
-        [skew_b,angle]=logmatirxs(inv(FK_space_sym(robot,joint_angle))*end_fram);
-        angle=vpa(angle,4);
-        twist_b = skew_b*angle 
-    end
 %%
 
 kuka = importrobot('iiwa14.urdf');
