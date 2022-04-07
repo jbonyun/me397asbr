@@ -10,7 +10,8 @@ function joint_angle=redundancy_resolution(robot,config,Tsd)
     angle=vpa(angle,4);
     twist_b = skew_b*angle;
     deltq=0.1;
-    w0=sqrt(det(J*J'));
+    Jb=J_body(robot, joint_angle);
+    w0=sqrt(det(Jb*Jb'));
     
     while norm(twist_b(1:3))>0.05 || norm(twist_b(4:6))>0.05
         for i=1:7
