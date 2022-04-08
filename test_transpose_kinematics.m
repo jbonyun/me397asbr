@@ -1,103 +1,45 @@
+
 clear;
-syms x1 x2 x3 x4 x5 x6 x7
-syms d1 d2 d3 d4 d5 real
+robot = robot_iiwa();
+test_kuka_examples;
 
-robot.home = [eye(3,3) [0; 0; 1180]; 0 0 0 1];
-    
-    % In home position, the direction of the axis of rotation for each joint.
-    % Positive rotations are CCW when looking in the given direction.
-    robot.axes = [
-        0  0  1;
-        0  1  0;
-        0  0  1;
-        0 -1  0;
-        0  0  1;
-        0  1  0;
-        0  0  1;
-        ];
-    % In home position, the location of the center of each joint, in mm, in
-    % world coordinates (center of base on table).
+%% Explore IK examples
+% Each example has a starting guess and a target, in angles (so we know are possible).
+% The IK is run to get the cartesian pose of the target angles.
+% Result is successful if pose from IK is very close to target pose.
 
-%     robot.offset = [
-%         0 0 0;
-%         0 0 d1;
-%         0 0 0;
-%         0 0 d1+d2+d3;
-%         0 0 0;
-%         0 0 d1+d2+d3+d4+d5;
-%         0 0 0;
-%         ];
+test_cases = {};
+%test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 0 0 0 0 0 0]'}; % Start non-singularity, move to singularity.
+% THIS CASE STARTS AT SINGULARITY test_cases{end + 1} = {[0 0 0 0 0 0 0]', [0 -.1 .1 -.1 0 0 0]'}; % Start at singularity, move away.
+%test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 -.1 0 -.1 0 0 0]'}; % Direct path is through singularity.
+%test_cases{end + 1} = {[0 .1 .1 .1 0 0 0]', [0 -.1 .1 -.1 0 0 0]'};
+%test_cases{end + 1} = {[-0.3,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3]', [0.1;0.1;0.1;0.1;0.1;0.1;0.1]};
+% THIS CASE STARTS AT SINGULARITY test_cases{end + 1} = {deg2rad(joints(5,:))', [-4.87125941617731 -0.0735561342818407 0.63521184011302 4.18870325095684 1.91282383432598 3.3090539278487 -2.35266570423377]'};
+test_cases{end + 1} = {deg2rad(joints(12,:))', [3.60426218545767 1.26563657105162 -3.19483613264846 -6.92175875711803 -1.79462324164591 0.672289765429706 2.96056445057525]'};
+%test_cases{end + 1} = {deg2rad(joints(12,:))', deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 
-    robot.offset = [
-        0 0 0;
-        0 0 360;
-        0 0 0;
-        0 0 780;
-        0 0 0;
-        0 0 1180;
-        0 0 0;
-        ];
-    % Extract DOF from the parameters we have already given.
-    robot.dof = size(robot.axes,1);
-    
-    % Calculate the screw vectors from each joint's axis at home and translation
-    % at home.
-    for i = 1:robot.dof
-        v = -cross(robot.axes(i,:), robot.offset(i,:));
-        robot.screw(:, i) = [robot.axes(i,:)'; v'];
-    end
-    for i = 1:robot.dof
-        robot.bscrew(:, i) = adjoint_transform(inv(robot.home)) * robot.screw(:, i);
-    end
-
-%joint_angles=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
-%joint_angles=[0;0;0;0;0;0;0];
-%joint_angles=[10;0;10;10;10;0;10];
-%joint_angles=[1,1,1,1,1,1,1];
-%joint_angles=[0.2;0.2;0.2;0.2;0.2;0.2;0.2];
-joint_angles=[0.4;0.4;0.5;0.6;0.9;0.4;0.4];
-J = sym('a%d%d',[6,7]);
-J(:, 1) = robot.screw(:, 1);
-prod_expon = expm_sym(robot.screw(:, 1) , joint_angles(1));
-for i = 2:robot.dof
-    ad=adjoint_sym(prod_expon);
-    J(:, i) = ad * robot.screw(:, i);
-    prod_expon = prod_expon * expm_sym(robot.screw(:, i) , joint_angles(i));
+for i_test_cases = 1:numel(test_cases)
+    %i = test_cases(i_test_cases);
+    joint_angles = test_cases{i_test_cases}{1};
+    % Find starting pose.
+    start_pose = FK_space(robot, joint_angles);
+    % Invent a destination pose.
+    target_joint_angles = test_cases{i_test_cases}{2};
+    target_pose = FK_space(robot, target_joint_angles);
+    init_guess = joint_angles;
+    fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
+    % Now solve it.
+    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = J_transpose_kinematics(robot, init_guess, target_pose);
+    ik_pose = FK_space(robot, ik_angles);
+    % Print results
+    fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
+    fprintf('Angular error in ZYZ: %s\n', mat2str((rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)))', 5));
+    fprintf('Linear error in xyz: %s\n', mat2str((trans2translation(target_pose)-trans2translation(ik_pose))', 5));
+    assert(all(rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)) < 1e-2, 'all'));
+    assert(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 1e-2, 'all'));
+    figure;
+    subplot(2, 1, 1);
+    title('Pose Error'); xlabel('Iteration'); hold all; yyaxis left; plot(0:numel(iter_errang)-1, iter_errang); ylabel('Norm of Angular Deviation'); yyaxis right; plot(0:numel(iter_errlin)-1, iter_errlin); ylabel('Norm of Linear Deviation');
+    subplot(2, 1, 2);
+    title('Condition and Step Size'); xlabel('Iteration'); hold all; yyaxis left; plot(0:numel(iter_cond)-1, iter_cond); ylabel('Condition Number'); yyaxis right; plot(0:numel(iter_stepnorm)-1, iter_stepnorm); ylabel('Norm Of Step');
 end
-
-end_fram=FK_space_sym(robot,joint_angles)
-
- %%
- 
-    %q=[0.19;0.19;0.19;0.19;0.19;0.19;0.19];
-    q=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
-    Xd=trans2screw(end_fram);
-    Xd=vpa(Xd,4)
-    transform=FK_space_sym(robot,q);
-    Xe=trans2screw(transform);
-    Xe=vpa(Xe,4)
-    err=Xd-Xe;
-    V = diag([1 1 1 2 2 2]);
-    %U =[1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1; 1 1 1 1 1 1];
-    U =[1 0 0 0 0 0;0 1 0 0 0 0 ;0 0 1 0 0 0;0 0 0 1 0 0;0 0 0 0 1 0;0 0 0 0 0 1];
-    K=U*V*U';
-    %A=pascal(6);
-    Error=[norm(err)];
-    i=1;
-    while norm(err)>3
-        Jacobian=J_body_sym(robot,q);
-        q_dot=transpose(Jacobian)*K*err;
-        q=q+q_dot*0.000001;
-        transform=FK_space_sym(robot,q);
-        Xe=trans2screw(transform);
-        Xe=vpa(Xe,4);
-        err=Xd-Xe;
-        norm(err)
-        Error(end+1)=norm(err);
-        i=i+1;
-    end
-I=1:i;
-plot(I,Error,'-o');
-xlabel('Number of iteration') ;
-ylabel('Norm of error');
-title('J transpose kinematics');
