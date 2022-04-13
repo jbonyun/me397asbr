@@ -18,18 +18,21 @@ function plot_3d_axis(origin, xvec, yvec, zvec, varargin)
     addOptional(p, 'ax', gca, isAxes);
     addParameter(p, 'Label', nan, @ischar);
     addParameter(p, 'scale', 1., @isfloat);
+    addParameter(p, 'originscale', 1., @isfloat);
+    p.KeepUnmatched = true;
     parse(p, origin, xvec, yvec, zvec, varargin{:});
     args = p.Results;
+    args.ForwardArgs = [fieldnames(p.Unmatched) struct2cell(p.Unmatched)]';
 
     was_hold = ishold();
     hold on;
 
     % Plot them separately so that we can control the color individually.
-    quiver3(args.ax, origin(1), args.origin(2), args.origin(3), args.xvec(1) * args.scale, args.xvec(2) * args.scale, args.xvec(3) * args.scale, 'r', 'LineWidth', 2, 'MaxHeadSize', 5);
-    quiver3(args.ax, origin(1), args.origin(2), args.origin(3), args.yvec(1) * args.scale, args.yvec(2) * args.scale, args.yvec(3) * args.scale, 'g', 'LineWidth', 2, 'MaxHeadSize', 5);
-    quiver3(args.ax, origin(1), args.origin(2), args.origin(3), args.zvec(1) * args.scale, args.zvec(2) * args.scale, args.zvec(3) * args.scale, 'b', 'LineWidth', 2, 'MaxHeadSize', 5);
+    quiver3(args.ax, origin(1) * args.originscale, args.origin(2) * args.originscale, args.origin(3) * args.originscale, args.xvec(1) * args.scale, args.xvec(2) * args.scale, args.xvec(3) * args.scale, 'r', 'LineWidth', 2, 'MaxHeadSize', 5, args.ForwardArgs{:});
+    quiver3(args.ax, origin(1) * args.originscale, args.origin(2) * args.originscale, args.origin(3) * args.originscale, args.yvec(1) * args.scale, args.yvec(2) * args.scale, args.yvec(3) * args.scale, 'g', 'LineWidth', 2, 'MaxHeadSize', 5, args.ForwardArgs{:});
+    quiver3(args.ax, origin(1) * args.originscale, args.origin(2) * args.originscale, args.origin(3) * args.originscale, args.zvec(1) * args.scale, args.zvec(2) * args.scale, args.zvec(3) * args.scale, 'b', 'LineWidth', 2, 'MaxHeadSize', 5, args.ForwardArgs{:});
     if ~isnan(args.Label)
-        text(origin(1), origin(2), origin(3), args.Label, 'Interpreter', 'latex');
+        text(origin(1) * args.originscale, origin(2 * args.originscale), origin(3) * args.originscale, args.Label, 'Interpreter', 'latex');
     end
 
     if ~was_hold
