@@ -20,7 +20,8 @@ test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 -.1 0 -.1 0 0 0]'}; % Direct path 
 
 %step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw);
 %step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, 0.5, 1e-7, 0.01);
-step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, 0.5, 0.01);
+%step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, 0.5, 0.01);
+step_function = @(ang, tw, dest_T) J_transpose_inverse_kinematics_step(robot, ang, tw, dest_T, 1e-7);
 
 for i_test_cases = 1:numel(test_cases)
     %i = test_cases(i_test_cases);
@@ -30,6 +31,7 @@ for i_test_cases = 1:numel(test_cases)
     % Invent a destination pose.
     target_joint_angles = test_cases{i_test_cases}{2};
     target_pose = FK_space(robot, target_joint_angles);
+    step_function = @(ang, tw) step_function(ang, tw, target_pose);
     init_guess = joint_angles;
     fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
     % Now solve it.
