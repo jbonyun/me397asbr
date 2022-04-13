@@ -56,8 +56,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
         fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 5));
     end
     while norm(twist_b(1:3)) > angular_thresh || norm(twist_b(4:6)) > linear_thresh
-        fprintf('%4d\n', iter);
-        pause(1.0);
+        pause(0.5);
         iter = iter + 1;
         % Calculate step
         step = step_function(joint_angles, twist_b);
