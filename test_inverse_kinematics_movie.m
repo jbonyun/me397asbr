@@ -42,8 +42,8 @@ for i_test_cases = 1:numel(test_cases)
     fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
     fprintf('Angular error in ZYZ: %s\n', mat2str((rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)))', 5));
     fprintf('Linear error in xyz: %s\n', mat2str((trans2translation(target_pose)-trans2translation(ik_pose))', 5));
-    assert(all(rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)) < 5e-2, 'all'));
-    assert(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 5e-1, 'all'));
+    assert(all(rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)) < 1e-1, 'all'));
+    assert(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 1e-0, 'all'));
 %     figure;
 %     subplot(2, 1, 1);
 %     title('Pose Error'); xlabel('Iteration'); hold all; yyaxis left; plot(0:numel(iter_errang)-1, iter_errang); ylabel('Norm of Angular Deviation'); yyaxis right; plot(0:numel(iter_errlin)-1, iter_errlin); ylabel('Norm of Linear Deviation');
