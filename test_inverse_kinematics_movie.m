@@ -10,18 +10,19 @@ test_kuka_examples;
 
 test_cases = {};
 %test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 0 0 0 0 0 0]'}; % Start non-singularity, move to singularity.
-% THIS CASE STARTS AT SINGULARITY test_cases{end + 1} = {[0 0 0 0 0 0 0]', [0 -.1 .1 -.1 0 0 0]'}; % Start at singularity, move away.
+%test_cases{end + 1} = {[0 0 0 0 0 0 0]', [0 -.1 .1 -.1 0 0 0]'}; % Start at singularity, move away.
 test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 -.1 0 -.1 0 0 0]'}; % Direct path is through singularity.
 %test_cases{end + 1} = {[0 .1 .1 .1 0 0 0]', [0 -.1 .1 -.1 0 0 0]'};
 %test_cases{end + 1} = {[-0.3,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3]', [0.1;0.1;0.1;0.1;0.1;0.1;0.1]};
-% THIS CASE STARTS AT SINGULARITY test_cases{end + 1} = {deg2rad(joints(5,:))', [-4.87125941617731 -0.0735561342818407 0.63521184011302 4.18870325095684 1.91282383432598 3.3090539278487 -2.35266570423377]'};
+%test_cases{end + 1} = {deg2rad(joints(5,:))', [-4.87125941617731 -0.0735561342818407 0.63521184011302 4.18870325095684 1.91282383432598 3.3090539278487 -2.35266570423377]'}; % Starts at a singularity
 %test_cases{end + 1} = {deg2rad(joints(12,:))', [3.60426218545767 1.26563657105162 -3.19483613264846 -6.92175875711803 -1.79462324164591 0.672289765429706 2.96056445057525]'};
 %test_cases{end + 1} = {deg2rad(joints(12,:))', deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
+%test_cases{end + 1} = {deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi, deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 
-%step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw);
-%step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, 0.5, 1e-7, 0.01);
-%step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, 0.5, 0.01);
-step_function = @(ang, tw, dest_T) J_transpose_inverse_kinematics_step(robot, ang, tw, dest_T, 1e-7);
+method_name = 'J Inverse'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, 0.01);
+%method_name = 'Redundancy Resolution'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, 0.05, 1e-7, 0.01);
+%method_name = 'DLS'; step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, 0.05, 0.10);
+%step_function = @(ang, tw, dest_T) J_transpose_inverse_kinematics_step(robot, ang, tw, dest_T, 1e-7);
 
 for i_test_cases = 1:numel(test_cases)
     %i = test_cases(i_test_cases);
@@ -31,11 +32,11 @@ for i_test_cases = 1:numel(test_cases)
     % Invent a destination pose.
     target_joint_angles = test_cases{i_test_cases}{2};
     target_pose = FK_space(robot, target_joint_angles);
-    step_function = @(ang, tw) step_function(ang, tw, target_pose);
+    %step_function = @(ang, tw) step_function(ang, tw, target_pose);
     init_guess = joint_angles;
     fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
     % Now solve it.
-    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function);
+    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, method_name);
     ik_pose = FK_space(robot, ik_angles);
     % Print results
     fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
