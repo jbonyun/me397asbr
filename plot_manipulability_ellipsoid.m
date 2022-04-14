@@ -77,10 +77,16 @@ function plot_manipulability_ellipsoid(Jpart, varargin)
     %s = mesh(x, y, z);
     %rotate(s, axis1, rad2deg(angle1));
     %rotate(s, axis2, rad2deg(angle2));
-    axis equal;
+    
     hold all;
     arrow_ends = evec * diag(sqrt(eval));
     quiver3(0,0,0,arrow_ends(1,3),arrow_ends(2,3),arrow_ends(3,3), 'off', 'r');
     quiver3(0,0,0,arrow_ends(1,2),arrow_ends(2,2),arrow_ends(3,2), 'off', 'g');
     quiver3(0,0,0,arrow_ends(1,1),arrow_ends(2,1),arrow_ends(3,1), 'off', 'b');
     hold off;
+
+    newlim = max(max(abs([xlim; ylim; zlim])));
+    xlim([-newlim newlim]);
+    ylim([-newlim newlim]);
+    zlim([-newlim newlim]);
+    %axis equal;
