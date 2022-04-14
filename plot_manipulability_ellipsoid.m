@@ -45,7 +45,7 @@ function plot_manipulability_ellipsoid(Jpart, varargin)
     yafter1 = rot1 * [0; 1; 0];
     % Rotate that to point in the direction of evec2.
     % Rotation axis is perp to both its current dir and target dir.
-    if norm(yafter1 - evec(:,2)) < 1e-7
+    if norm(yafter1 - evec(:,2)) < 1e-7 || norm(yafter1 + evec(:,2)) < 1e-7
         % No rotation needed (which messes up the calculation otherwise)
         axis2 = evec(:,2);
         angle2 = 0;
