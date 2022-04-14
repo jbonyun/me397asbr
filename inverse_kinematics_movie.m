@@ -15,6 +15,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
     %#ok<*MINV> 
 
     % Some constants for the algorithm.
+    angular_thresh = 0.05; %0.001;  % When to stop the search.
+    linear_thresh = 0.5; %0.01;  % When to stop the search.
     do_print = true;
 
     % Prepare the robot graphics model
