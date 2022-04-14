@@ -1,4 +1,4 @@
-function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title)
+function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle)
     % Plot the iterations of J-inverse IK
     % Inputs:
     %   robot: struct with robot description
@@ -13,6 +13,9 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
 
     % Suppress annoying warning about inv
     %#ok<*MINV> 
+    if nargin < 6
+        plot_subtitle = '';
+    end
 
     % Some constants for the algorithm.
     angular_thresh = 0.1; %0.001;  % When to stop the search.
@@ -24,7 +27,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
 
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot();
-    sgtitle(sprintf("%s Inverse Kinematics\n ", plot_title));
+    sgtitle(sprintf("Inverse Kinematics via %s\n%s", plot_title, plot_subtitle));
     update_plot = @(jang, iter, linerr, angerr, J, cond, iso) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, J, cond, iso);
 
     % Helper lambda for getting the twist.
@@ -72,9 +75,9 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
             fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
         end
     end
-    sgtitle(sprintf("%s Inverse Kinematics\n(done)", plot_title));
+    sgtitle(sprintf("Inverse Kinematics via %s\n%s (done)", plot_title, plot_subtitle));
     % Make video file
-    video_fname = sprintf('video_%s_throughZeroPos_lr0.01.mp4', plot_title);
+    video_fname = sprintf('video_%s_throughZeroC_lr0.01.mp4', plot_title);
     fprintf('Saving video file to %s\n', video_fname);
     writer = VideoWriter(video_fname, "MPEG-4");
     writer.FrameRate = 20;
