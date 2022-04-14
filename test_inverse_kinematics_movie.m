@@ -9,23 +9,24 @@ test_kuka_examples;
 % Result is successful if pose from IK is very close to target pose.
 
 test_cases = {};
-%test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 0 0 0 0 0 0]'}; % Start non-singularity, move to singularity.
+case_desc = 'to zero position'; test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 0 0 0 0 0 0]'}; % Start non-singularity, move to singularity.
 %test_cases{end + 1} = {[0 0 0 0 0 0 0]', [0 -.1 .1 -.1 0 0 0]'}; % Start at singularity, move away.
 %test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 -.1 0 -.1 0 0 0]'}; % Direct path is through singularity.
 %test_cases{end + 1} = {[0 .1 .1 .1 0 0 0]', [0 -.1 .1 -.1 0 0 0]'};
-case_desc = '+0.1 to -0.1 in all joints'; test_cases{end + 1} = {[.1 .1 .1 .1 .1 .1 .1]', [-.1 -.1 -.1 -.1 -.1 -.1 -.1]'};
+%case_desc = '+0.1 to -0.1 in all joints'; test_cases{end + 1} = {[.1 .1 .1 .1 .1 .1 .1]', [-.1 -.1 -.1 -.1 -.1 -.1 -.1]'};
+%case_desc = '+0.4 to -0.4 in all joints'; test_cases{end + 1} = {[.4 .4 .4 .4 .4 .4 .4]', [-.4 -.4 -.4 -.4 -.4 -.4 -.4]'};
 %test_cases{end + 1} = {[-0.3,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3]', [0.1;0.1;0.1;0.1;0.1;0.1;0.1]};
 %test_cases{end + 1} = {deg2rad(joints(5,:))', [-4.87125941617731 -0.0735561342818407 0.63521184011302 4.18870325095684 1.91282383432598 3.3090539278487 -2.35266570423377]'}; % Starts at a singularity
 %test_cases{end + 1} = {deg2rad(joints(12,:))', [3.60426218545767 1.26563657105162 -3.19483613264846 -6.92175875711803 -1.79462324164591 0.672289765429706 2.96056445057525]'};
 %test_cases{end + 1} = {deg2rad(joints(12,:))', deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 %test_cases{end + 1} = {deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi, deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 
-lr = 0.01;
-%method_name = 'J Inverse'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, lr);
-method_name = 'Redundancy Resolution'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, 1e-7, 0.01);
+lr = 0.02;
+method_name = 'J Inverse'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, lr);
+%method_name = 'Redundancy Resolution'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, 1e-4, 0.01);
 %method_name = 'DLS'; step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, lr, 0.10);
 %step_function = @(ang, tw, dest_T) J_transpose_inverse_kinematics_step(robot, ang, tw, dest_T, lr);
-plot_subtitle = sprintf('%s, lr=%f', case_desc, lr);
+plot_subtitle = sprintf('%s, lr=%.3f, capped \\pi/8', case_desc, lr);
 
 for i_test_cases = 1:numel(test_cases)
     %i = test_cases(i_test_cases);
