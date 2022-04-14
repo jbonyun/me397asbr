@@ -1,2 +1,6 @@
 *.asv
 *.zip
+
+# video files
+*.mp4
+*.avi
