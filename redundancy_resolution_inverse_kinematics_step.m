@@ -20,11 +20,12 @@ function [step] = redundancy_resolution_inverse_kinematics_step(robot, joint_ang
         lr = 0.5;  % Learning rate; how fast we descend along gradient. Notes say "1".
     end
     if nargin < 5
-        deltaq = 0.01;  % Finite difference of angle for manipulability slope.
-    end
-    if nargin < 6
         k0 = 1e-7;  % Scaling factor for manipulability slope.
     end
+    if nargin < 6
+        deltaq = 0.01;  % Finite difference of angle for manipulability slope.
+    end
+
 
    Jb = J_body(robot, joint_angles);
     % Calculate partial derivative of manipulability wrt joints
