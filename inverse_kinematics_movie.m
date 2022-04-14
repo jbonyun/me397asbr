@@ -137,11 +137,11 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     subplot(state.ax_err);
     yyaxis left;
     semilogy(linerr);
-    ylim([0.01 inf]);
+    ylim([1e-1 inf]);
     ylabel('Linear');
     yyaxis right;
     semilogy(angerr);
-    ylim([0.001 inf]);
+    ylim([1e-2 inf]);
     ylabel('Angular');
     title('Log Error');
     subplot(state.ax_condiso);
