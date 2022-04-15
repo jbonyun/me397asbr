@@ -75,15 +75,18 @@ twist_b=screw*angle;
 
 
 while norm(twist_b(1:3)) > 0.01 || norm(twist_b(4:6)) > 0.01
-    Jacobin=J_body_sym(robot,joint_angles);
+    Jacobin=J_body(robot,joint_angles);
     %lama=(twist_b'*(Jacobin*Jacobin'*twist_b))/norm(Jacobin*Jacobin'*twist_b);
-    lama=0.0000001;
+    lama=0.000001;
     step=transpose(Jacobin)*twist_b*lama;
-    joint_angles = mod(joint_angles + step, 2*pi);
+    joint_angles = joint_angles + step
     %joint_angles=joint_angles+transpose(Jacobin)*twist_b*lama;
     [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
     twist_b=screw*angle;
-    norm(twist_b)
+    norm(twist_b);
 
 end
-  
+
+%%
+joint_angles=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
+J_transpose_kinematics(robot, joint_angles, end_fram)

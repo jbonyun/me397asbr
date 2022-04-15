@@ -15,19 +15,19 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = J_
     %#ok<*MINV> 
 
     % Some constants for the algorithm.
-    lr = 0.0000001;  % Learning rate; how fast we descend along gradient. Notes say "1".
+    lr = 0.000001;  % Learning rate; how fast we descend along gradient. Notes say "1".
     angular_thresh = 0.001;  % When to stop the search.
     linear_thresh = 0.01;  % When to stop the search.
     do_print = true;
 
-    % Helper lambda for getting the twist.
-    get_twist = @(joint_angles) get_twist_ex(robot, joint_angles, Tsd);
-
+   
     % Start with the initial guess.
-    joint_angles = guess_joint_angles;
+    joint_ang
+    les = guess_joint_angles;
 
     iter = 0;
-    twist_b = get_twist(joint_angles);
+    [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
+    twist_b=screw*angle;
     iter_errang(iter+1) = norm(twist_b(1:3));
     iter_errlin(iter+1) = norm(twist_b(4:6));
     iter_cond(iter+1) = J_condition(J_body(robot, joint_angles));
@@ -39,18 +39,19 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = J_
     while norm(twist_b(1:3)) > angular_thresh || norm(twist_b(4:6)) > linear_thresh
         iter = iter + 1;
         % Calculate step
-        Jb = J_body(robot, joint_angles);
+        Jacobin= J_body(robot, joint_angles);
        
         step=transpose(Jacobin)*twist_b*lr;
         % Update the solution
         joint_angles = mod(joint_angles + step, 2*pi);
 
         % Prepare state for next iteration
-        twist_b = get_twist(joint_angles);
+        [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
+         twist_b=screw*angle;
         % Save progress
         iter_errang(iter+1) = norm(twist_b(1:3));
         iter_errlin(iter+1) = norm(twist_b(4:6));
-        iter_cond(iter+1) = J_condition(Jb);
+        iter_cond(iter+1) = J_condition(Jacobin);
         iter_stepnorm(iter+1) =  norm(step);
         % Print progress
         if do_print && mod(iter, 1) == 0
@@ -59,8 +60,3 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = J_
     end
 end
 
-function twist = get_twist_ex(robot, joint_angles, Tsd)
-    trans = inv(FK_space(robot, joint_angles)) * Tsd;
-    [screw, theta] = trans2screw(trans);
-    twist = screw2twist(screw, theta);
-end
