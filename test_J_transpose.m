@@ -65,59 +65,25 @@ for i = 2:robot.dof
     prod_expon = prod_expon * expm_sym(robot.screw(:, i) , joint_angles(i));
 end
 
-end_fram=FK_space_sym(robot,joint_angles)
-
- %%
- 
-    %q=[0.19;0.19;0.19;0.19;0.19;0.19;0.19];
-    q=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
-    Xd=trans2vector(end_fram);
-    Xd=vpa(Xd,6)
-    transform=FK_body(robot,q);
-    Xe=trans2vector(transform);
-    Xe=vpa(Xe,6)
-    err=Xd-Xe;
-    V = diag([10 10 10 1 1 1]);
-    %U =[1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1;1 1 1 1 1 1; 1 1 1 1 1 1];
-    %U =[1 0 0 0 0 0;0 1 0 0 0 0 ;0 0 1 0 0 0;0 0 0 1 0 0;0 0 0 0 1 0;0 0 0 0 0 1];
-    U = orth(eye(6));
-    K=U*V*U';
-    time_step=0.000001;
-
-
-    %A=pascal(6);
-    Error=(norm(err));
-    i=1;
-    while norm(err)>3
-        Jacobian=J_space(robot,q);
-        q_dot=transpose(Jacobian)*K*err;
-        q=q+q_dot*time_step;
-        transform=FK_body(robot,q);
-        Xe=trans2vector(transform);
-        Xe=vpa(Xe,6);
-        %Xe=Xe+Jacobian*q_dot*time_step;
-        err=Xd-Xe;
-        V_dot=-err'*K*Jacobian*q_dot;
-        norm(err);
-        norm2=err'*K*err
-        Error(end+1)=norm(err);
-        i=i+1;
-    end
-I=1:i;
-plot(I,Error,'-o');
-xlabel('Number of iteration') ;
-ylabel('Norm of error');
-title('J transpose kinematics');
-
+end_fram=FK_space(robot,joint_angles)
 %%
-   q=[0.1;0.1;0.1;0.1;0.1;0;1];
-   q_dot=q;
-   Jacobian=J_space(robot,q);
-    transform=FK_space(robot,q);
-    Xe=trans2vector(transform);
-    Xe=vpa(Xe,6);
-    Xe_dot=Jacobian*q_dot
-    transform=FK_space(robot,q+q_dot);
-    Xe_2=trans2vector(transform);
-    Xe_2=vpa(Xe_2,6);
-    Xe_2-Xe
+
+joint_angles=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
+Tsd=end_fram;
+[screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
+twist_b=screw*angle;
+
+
+while norm(twist_b(1:3)) > 0.01 || norm(twist_b(4:6)) > 0.01
+    Jacobin=J_body_sym(robot,joint_angles);
+    %lama=(twist_b'*(Jacobin*Jacobin'*twist_b))/norm(Jacobin*Jacobin'*twist_b);
+    lama=0.0000001;
+    step=transpose(Jacobin)*twist_b*lama;
+    joint_angles = mod(joint_angles + step, 2*pi);
+    %joint_angles=joint_angles+transpose(Jacobin)*twist_b*lama;
+    [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
+    twist_b=screw*angle;
+    norm(twist_b)
+
+end
+  
