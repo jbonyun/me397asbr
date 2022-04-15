@@ -21,6 +21,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
     angular_thresh = 0.1; %0.001;  % When to stop the search.
     linear_thresh = 1.0; %0.01;  % When to stop the search.
     joint_step_size_limit = pi/8;  % Max amount any joint can move in a step.
+    video_fname = sprintf('video_%s_toZeroPos_cappedlr0.10.mp4', plot_title);
     do_print = true;
 
     % Prepare the robot graphics model
@@ -88,7 +89,6 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
     end
     sgtitle(sprintf("Inverse Kinematics via %s\n%s (done)", plot_title, plot_subtitle));
     % Make video file
-    video_fname = sprintf('video_%s_toZeroPos_cappedlr0.02.mp4', plot_title);
     fprintf('Saving video file to %s\n', video_fname);
     writer = VideoWriter(video_fname, "MPEG-4");
     writer.FrameRate = 20;
@@ -114,15 +114,16 @@ function [st] = build_plot()
     st.f = figure;
     %fpos = st.f.get('Position');
     %st.f.set('Position', [fpos(1) fpos(2) fpos(3) fpos(3) * 2]);
-    st.f.set('Position', [50 1000 700 1100]);  % x, y (from bottom), width, height
-    st.ax_pic = subplot(4, 2, [1 2 3 4]);
-    st.ax_err = subplot(4, 2, 5);
-    st.ax_condiso = subplot(4, 2, 6);
-    st.ax_ellipse_lin = subplot(4, 2, 7);
-    st.ax_ellipse_ang = subplot(4, 2, 8);
+    st.f.set('Position', [50 1200 1300 600]);  % x, y (from bottom), width, height
+    definesubplot = @(loc) subtightplot(2, 4, loc, [0.065 0.065], [0.10 0.16], [0.03 0.04]);
+    st.ax_pic = definesubplot([1 2 5 6]);
+    st.ax_err = definesubplot(3);
+    st.ax_condiso = definesubplot(4);
+    st.ax_ellipse_lin = definesubplot(7);
+    st.ax_ellipse_ang = definesubplot(8);
     st.text_iter = annotation('textbox', [0.01 .95 0.01 0.01], 'String', sprintf('Iter %2d', iternum), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
-    st.text_err = annotation('textbox', [0.82 .97 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
-    st.text_capped = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
+    st.text_err = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
+    st.text_capped = annotation('textbox', [0.01 .80 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
 end
 
 function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, J, condnum, isotropy, capped_desc)
