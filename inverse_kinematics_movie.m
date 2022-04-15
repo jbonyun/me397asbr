@@ -1,4 +1,4 @@
-function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle)
+function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle, video_fname)
     % Plot the iterations of J-inverse IK
     % Inputs:
     %   robot: struct with robot description

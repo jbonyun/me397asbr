@@ -21,12 +21,15 @@ case_desc = 'to zero position'; test_cases{end + 1} = {[0 .1 0 .1 0 0 0]', [0 0 
 %test_cases{end + 1} = {deg2rad(joints(12,:))', deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 %test_cases{end + 1} = {deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi, deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 
-lr = 0.02;
-method_name = 'J Inverse'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, lr);
-%method_name = 'Redundancy Resolution'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, 1e-4, 0.01);
-%method_name = 'DLS'; step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, lr, 0.10);
+lr = 0.1;
+%method_name = 'J Inverse'; method_fname = 'JInv'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, lr);
+%method_name = 'Redundancy Resolution (1e-4)'; method_fname = 'RedRes1e-6'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, 1e-4, 0.01);
+method_name = 'Redundancy Resolution (1e-5)'; method_fname = 'RedRes1e-6'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, 1e-5, 0.01);
+%method_name = 'Redundancy Resolution (1e-6)'; method_fname = 'RedRes1e-6'; step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, 1e-6, 0.01);
+%method_name = 'DLS'; method_fname = 'DLS'; step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, lr, 0.10);
 %step_function = @(ang, tw, dest_T) J_transpose_inverse_kinematics_step(robot, ang, tw, dest_T, lr);
 plot_subtitle = sprintf('%s, lr=%.3f, capped \\pi/8', case_desc, lr);
+video_fname = sprintf('video_%s_AtoZeroPos_cappedlr%4.2f.mp4', method_fname, lr);
 
 for i_test_cases = 1:numel(test_cases)
     %i = test_cases(i_test_cases);
@@ -40,7 +43,7 @@ for i_test_cases = 1:numel(test_cases)
     init_guess = joint_angles;
     fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
     % Now solve it.
-    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, method_name, plot_subtitle);
+    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, method_name, plot_subtitle, video_fname);
     ik_pose = FK_space(robot, ik_angles);
     % Print results
     fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
