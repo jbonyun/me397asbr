@@ -21,7 +21,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
     angular_thresh = 0.1; %0.001;  % When to stop the search.
     linear_thresh = 1.0; %0.01;  % When to stop the search.
     joint_step_size_limit = pi/8;  % Max amount any joint can move in a step.
-    video_fname = sprintf('video_%s_toZeroPos_cappedlr0.10.mp4', plot_title);
+    iter_limit = 200;
     do_print = true;
 
     % Prepare the robot graphics model
@@ -53,7 +53,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
         fprintf('%4s  %8s  %9s  %10s  %12s  %s\n', 'Iter', 'StepNorm', 'ErrAng', 'ErrLin', 'Cond#', 'Joint Angles');    
         fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 5));
     end
-    while norm(twist_b(1:3)) > angular_thresh || norm(twist_b(4:6)) > linear_thresh
+    while (norm(twist_b(1:3)) > angular_thresh || norm(twist_b(4:6)) > linear_thresh) && iter < iter_limit
         drawnow;
         %pause(0.1);
         iter = iter + 1;
