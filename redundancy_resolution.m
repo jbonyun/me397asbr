@@ -18,20 +18,20 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = re
 
     % Some constants for the algorithm.
     lr = 0.5;  % Learning rate; how fast we descend along gradient. Notes imply "1". Smaller can be smoother, but more iterations.
-    deltaq = 0.01;  % Finite difference of angle for manipulability slope.
-    k0 = 1e-7;  % Scaling factor for manipulability slope.
-    angular_thresh = 0.001;  % When to stop the search.
-    linear_thresh = 0.01;  % When to stop the search.
+    deltaq = 0.1;  % Finite difference of angle for manipulability slope.
+    %k0 = 1e-7;  % Scaling factor for manipulability slope.
+    k0=6e-6;
+    angular_thresh = 0.1;  % When to stop the search.
+    linear_thresh = 0.1;  % When to stop the search.
     do_print = true;  % Do or do not print out progress each iteration.
 
-    % Helper lambda for getting the twist.
-    get_twist = @(joint_angles) get_twist_ex(robot, joint_angles, Tsd);
 
     % Start with the initial guess.
     joint_angles = guess_joint_angles;
-
+    [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
+    twist_b=screw*angle;
     iter = 0;
-    twist_b = get_twist(joint_angles);
+    
     iter_errang(iter+1) = norm(twist_b(1:3));
     iter_errlin(iter+1) = norm(twist_b(4:6));
     iter_cond(iter+1) = J_condition(J_body(robot, joint_angles));
@@ -45,7 +45,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = re
         Jb = J_body(robot, joint_angles);
         % Calculate partial derivative of manipulability wrt joints
         w0 = sqrt(det(Jb*Jb'));
-        q0_dot = nan(1, 7);
+        q0_dot = nan(7, 1);
         for i=1:7
             q0 = joint_angles;
             q0(i) = q0(i) + deltaq;
@@ -55,11 +55,12 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = re
         end
         % Calculate step
         J_daggr = dagger_J(Jb,7,6);
-        step = J_daggr * twist_b * lr + (eye(7,7) - J_daggr *Jb) * k0 * q0_dot';
+        step = J_daggr * twist_b * lr + (eye(7,7) - J_daggr *Jb) * k0 * q0_dot;
         % Update the solution
-        joint_angles = mod(joint_angles + step, 2*pi);
+        joint_angles = joint_angles + step;
         % Prepare state for next iteration
-        twist_b = get_twist(joint_angles);
+        [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);
+        twist_b=screw*angle;
         % Save progress
         iter_errang(iter+1) = norm(twist_b(1:3));
         iter_errlin(iter+1) = norm(twist_b(4:6));
@@ -72,11 +73,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = re
     end
 end
 
-function twist = get_twist_ex(robot, joint_angles, Tsd)
-    trans = inv(FK_space(robot, joint_angles)) * Tsd;
-    [screw, theta] = trans2screw(trans);
-    twist = screw2twist(screw, theta);
-end    
+
 
 
 

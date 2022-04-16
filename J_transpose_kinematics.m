@@ -22,8 +22,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = J_
 
    
     % Start with the initial guess.
-    joint_ang
-    les = guess_joint_angles;
+    joint_angles = guess_joint_angles;
 
     iter = 0;
     [screw, angle]=logmatirxs(inv(FK_space(robot,joint_angles))*Tsd);

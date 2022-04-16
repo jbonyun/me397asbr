@@ -43,4 +43,6 @@ for i_test_cases = 1:numel(test_cases)
     subplot(2, 1, 2);
     title('Condition and Step Size'); xlabel('Iteration'); hold all; yyaxis left; plot(0:numel(iter_cond)-1, iter_cond); ylabel('Condition Number'); yyaxis right; plot(0:numel(iter_stepnorm)-1, iter_stepnorm); ylabel('Norm Of Step');
 end
-
+%%
+init_guess = [0.1;0.1;0.1;0.1;0.1;0.1;0.1];
+redundancy_resolution(robot, init_guess, end_fram);
