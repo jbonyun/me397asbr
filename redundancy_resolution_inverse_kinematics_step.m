@@ -30,7 +30,7 @@ function [step] = redundancy_resolution_inverse_kinematics_step(robot, joint_ang
    Jb = J_body(robot, joint_angles);
     % Calculate partial derivative of manipulability wrt joints
     w0 = sqrt(det(Jb*Jb'));
-    q0_dot = nan(1, 7);
+    q0_dot = nan(7, 1);
     for i=1:7
         q0 = joint_angles;
         q0(i) = q0(i) + deltaq;
@@ -40,4 +40,4 @@ function [step] = redundancy_resolution_inverse_kinematics_step(robot, joint_ang
     end
     % Calculate step
     J_daggr = dagger_J(Jb,7,6);
-    step = J_daggr * twist_to_target * lr + (eye(7,7) - J_daggr *Jb) * k0 * q0_dot';
+    step = J_daggr * twist_to_target * lr + (eye(7,7) - J_daggr *Jb) * k0 * q0_dot;
