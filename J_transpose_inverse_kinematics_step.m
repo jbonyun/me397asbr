@@ -17,6 +17,17 @@ function [step] = J_transpose_inverse_kinematics_step(robot, joint_angles, twist
 
     % Calculate step
     Jb = J_body(robot, joint_angles);
+
+    % From paper: Introduction to Inverse Kinematics with Jacobian
+    % Transpose, Pseudoinverse, and Damped Least Squares methods. Buss.
+    % 2009. p 7.
+    % Assuming twist can be used in place of e, which is cartesian distance
+    % but the paper doesn't address orientation, so it's a little vague
+    % about how to handle 6 dof.
+    alpha = dot(twist_to_target, Jb * Jb' * twist_to_target) / dot(Jb * Jb' * twist_to_target, Jb * Jb' * twist_to_target);
+    lr = lr * alpha;
+    disp(lr);
+
     step = Jb' * twist_to_target * lr;
 
 
