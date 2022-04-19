@@ -24,8 +24,8 @@ test_cases = {};
 case_desc = 'Through off-zero singularity B'; case_fname = 'XXthroughSing'; test_cases{end + 1} = {[0 1 1 1 1 1 1]', [0 pi/2+.1 1 0-0.15 1 1 1]'};
 %case_desc = 'Through off-zero singularity'; case_fname = 'BthroughSing'; test_cases{end + 1} = {[1 1 1 1 1 1 1]', [1 -1 1 1 1 -1 1]'};
 %test_cases{end + 1} = {[-0.3,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3]', [0.1;0.1;0.1;0.1;0.1;0.1;0.1]};
-%test_cases{end + 1} = {deg2rad(joints(12,:))', [3.60426218545767 1.26563657105162 -3.19483613264846 -6.92175875711803 -1.79462324164591 0.672289765429706 2.96056445057525]'};
 %case_desc = 'folding up'; case_fname = 'CfoldingUp'; test_cases{end + 1} = {deg2rad(joints(5,:))', [-4.87125941617731 -0.0735561342818407 0.63521184011302 4.18870325095684 1.91282383432598 3.3090539278487 -2.35266570423377]'}; % Starts at a singularity
+%case_desc = 'random poses'; case_fname = 'XXInteresting'; test_cases{end + 1} = {deg2rad(joints(12,:))', [3.60426218545767 1.26563657105162 -3.19483613264846 -6.92175875711803 -1.79462324164591 0.672289765429706 2.96056445057525]'};
 %test_cases{end + 1} = {deg2rad(joints(12,:))', deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 %test_cases{end + 1} = {deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi, deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 
