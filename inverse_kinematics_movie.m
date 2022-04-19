@@ -91,7 +91,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
     % Make video file
     fprintf('Saving video file to %s\n', video_fname);
     writer = VideoWriter(video_fname, "MPEG-4");
-    writer.FrameRate = 20;
+    writer.FrameRate = 10;
     open(writer);
     for i = 1:numel(frames)
         frames(i).cdata = imresize(frames(i).cdata, 0.5);
