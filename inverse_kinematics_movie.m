@@ -65,7 +65,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         if max(abs(step)) > joint_step_size_limit
             step_scale = joint_step_size_limit / max([abs(step); joint_step_size_limit]);
             %capped_desc = sprintf('capped @ %.1f%%', step_scale * 100.);
-            capped_desc = sprintf('BIG JVEL %.1f', max(max(abs(iter_step))));
+            capped_desc = sprintf('BIG JVEL');
         else
             step_scale = 1.0;
             capped_desc = '';
@@ -98,10 +98,13 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     max_joint_vel = max(max(abs(iter_step))) ./ lr;
     update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
     sgtitle(sprintf("Inverse Kinematics via %s\n%s (%s)", plot_title, plot_subtitle, done_word));
+    frames(iter+2) = getframe(plot_state.f);
     % Make video file
-    fprintf('Saving video file to %s\n', video_fname);
     writer = VideoWriter(video_fname, "MPEG-4");
-    writer.FrameRate = 10;
+    lr_per_second = 0.5;
+    frames_per_second = min(30, floor(lr_per_second / lr));
+    writer.FrameRate = frames_per_second;
+    fprintf('Saving video file to %s at %f fps\n', video_fname, frames_per_second);
     open(writer);
     for i = 1:numel(frames)
         frames(i).cdata = imresize(frames(i).cdata, 0.5);
