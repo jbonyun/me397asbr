@@ -26,9 +26,11 @@ function [step] = J_transpose_inverse_kinematics_step(robot, joint_angles, twist
     % about how to handle 6 dof.
     alpha = dot(twist_to_target, Jb * Jb' * twist_to_target) / dot(Jb * Jb' * twist_to_target, Jb * Jb' * twist_to_target);
     lr = lr * alpha;
-    disp(lr);
+    fprintf('alpha = %f\n', alpha);
 
-    step = Jb' * twist_to_target * lr;
+    K = diag([2500 2500 2500 1 1 1]);
+
+    step = Jb' * K * twist_to_target * lr;
 
 
 
