@@ -64,12 +64,13 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         % large in any joint.
         if max(abs(step)) > joint_step_size_limit
             step_scale = joint_step_size_limit / max([abs(step); joint_step_size_limit]);
-            capped_desc = sprintf('capped @ %.1f%%', step_scale * 100.);
+            %capped_desc = sprintf('capped @ %.1f%%', step_scale * 100.);
+            capped_desc = sprintf('BIG JVEL %.1f', max(max(abs(iter_step))));
         else
             step_scale = 1.0;
             capped_desc = '';
         end
-        step = step * step_scale;
+        %step = step * step_scale;  %% THIS IS PROBLEM
         % Update the solution
         joint_angles = mod(joint_angles + step, 2*pi);
         % Prepare state for next iteration
