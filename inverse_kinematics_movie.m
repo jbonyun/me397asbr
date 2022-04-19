@@ -91,9 +91,9 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
             fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
         end
     end
-    done_word = '(done)';
+    done_word = 'done';
     if iter >= iter_limit
-        done_word = '(TIMEOUT)';
+        done_word = 'TIMEOUT';
     end
     max_joint_vel = max(max(abs(iter_step))) ./ lr;
     update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
