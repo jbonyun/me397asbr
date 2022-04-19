@@ -87,7 +87,11 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
             fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
         end
     end
-    sgtitle(sprintf("Inverse Kinematics via %s\n%s (done)", plot_title, plot_subtitle));
+    done_word = '(done)';
+    if iter >= iter_limit
+        done_word = '(TIMEOUT)';
+    end
+    sgtitle(sprintf("Inverse Kinematics via %s\n%s (%s)", plot_title, plot_subtitle, done_word));
     % Make video file
     fprintf('Saving video file to %s\n', video_fname);
     writer = VideoWriter(video_fname, "MPEG-4");
