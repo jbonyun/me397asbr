@@ -42,9 +42,10 @@ for i_test_cases = 1:numel(test_cases)
     init_guess = joint_angles;
     fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
     % Now solve it.
-    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, method_name, plot_subtitle, video_fname);
+    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, method_name, plot_subtitle, video_fname);
     ik_pose = FK_space(robot, ik_angles);
     % Print results
+    fprintf('Max joint velocity: %.2f %s\n', max(max(abs(iter_step))) ./ lr, mat2str(max(abs(iter_step)) ./ lr, 3));
     fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
     fprintf('Angular error in ZYZ: %s\n', mat2str((rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)))', 5));
     fprintf('Linear error in xyz: %s\n', mat2str((trans2translation(target_pose)-trans2translation(ik_pose))', 5));

@@ -1,4 +1,4 @@
-function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle, video_fname)
+function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle, video_fname)
     % Plot the iterations of J-inverse IK
     % Inputs:
     %   robot: struct with robot description
@@ -46,6 +46,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
     iter_errlin(iter+1) = norm(twist_b(4:6));
     iter_cond(iter+1) = J_condition(Jb);
     iter_isotropy(iter+1) = J_isotropy(Jb);
+    iter_step(iter+1, 1:robot.dof) = nan;
     iter_stepnorm(iter+1) = nan;
     update_plot(joint_angles, iter, iter_errlin, iter_errang, Jb, iter_cond, iter_isotropy, '');
     frames(iter+1) = getframe(plot_state.f);
@@ -79,6 +80,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = in
         iter_errlin(iter+1) = norm(twist_b(4:6));
         iter_cond(iter+1) = J_condition(Jb);
         iter_isotropy(iter+1) = J_isotropy(Jb);
+        iter_step(iter+1, 1:robot.dof) = step;
         iter_stepnorm(iter+1) =  norm(step);
         update_plot(joint_angles, iter, iter_errlin, iter_errang, Jb, iter_cond, iter_isotropy, capped_desc);
         frames(iter+1) = getframe(plot_state.f);
