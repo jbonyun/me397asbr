@@ -31,10 +31,11 @@ case_desc = 'Through off-zero singularity B'; case_fname = 'XXthroughSing'; test
 
 lr = 0.1;
 %method_name = 'J Inverse'; method_fname = 'JInv'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, lr);
-rrk0 = '1e-7'; method_name = sprintf('Redundancy Resolution (%s)', rrk0); method_fname = sprintf('RedRes%s', rrk0); step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, str2double(rrk0), 0.01);
+%rrk0 = '1e-7'; method_name = sprintf('Redundancy Resolution (%s)', rrk0); method_fname = sprintf('RedRes%s', rrk0); step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, str2double(rrk0), 0.01);
 %method_name = 'DLS'; method_fname = 'DLS'; step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, lr, .1);
 %method_name = 'J transpose'; method_fname = 'JTrans'; step_function = @(ang, tw) J_transpose_inverse_kinematics_step(robot, ang, tw, lr);
-plot_subtitle = sprintf('%s, lr=%.3f, uncapped', case_desc, lr); %%%capped \\pi/8', case_desc, lr);
+method_name = 'Smart'; method_fname = 'Smart'; step_function = @(ang, tw) J_combination_inverse_kinematics_step(robot, ang, tw, lr);
+plot_subtitle = sprintf('%s, lr=%.2f, uncapped', case_desc, lr); %%%capped \\pi/8', case_desc, lr);
 video_fname = sprintf('video_%s_%s_uncapped_lr%4.2f.mp4', method_fname, case_fname, lr);
 
 for i_test_cases = 1:numel(test_cases)
