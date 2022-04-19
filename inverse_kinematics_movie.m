@@ -1,4 +1,4 @@
-function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle, video_fname)
+function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle, video_fname, lr)
     % Plot the iterations of J-inverse IK
     % Inputs:
     %   robot: struct with robot description
@@ -30,7 +30,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot();
     sgtitle(sprintf("Inverse Kinematics via %s\n%s", plot_title, plot_subtitle));
-    update_plot = @(jang, iter, linerr, angerr, J, cond, iso, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, J, cond, iso, cap_desc);
+    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, cap_desc);
 
     % Helper lambda for getting the twist.
     get_twist = @(joint_angles) get_twist_ex(robot, joint_angles, dest_T);
@@ -48,7 +48,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     iter_isotropy(iter+1) = J_isotropy(Jb);
     iter_step(iter+1, 1:robot.dof) = nan;
     iter_stepnorm(iter+1) = nan;
-    update_plot(joint_angles, iter, iter_errlin, iter_errang, Jb, iter_cond, iter_isotropy, '');
+    update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, '');
     frames(iter+1) = getframe(plot_state.f);
     if do_print
         fprintf('%4s  %8s  %9s  %10s  %12s  %s\n', 'Iter', 'StepNorm', 'ErrAng', 'ErrLin', 'Cond#', 'Joint Angles');    
@@ -83,7 +83,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         iter_isotropy(iter+1) = J_isotropy(Jb);
         iter_step(iter+1, 1:robot.dof) = step;
         iter_stepnorm(iter+1) =  norm(step);
-        update_plot(joint_angles, iter, iter_errlin, iter_errang, Jb, iter_cond, iter_isotropy, capped_desc);
+        max_joint_vel = max(abs(step)) ./ lr;
+        update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
         frames(iter+1) = getframe(plot_state.f);
         % Print progress
         if do_print && mod(iter, 1) == 0
@@ -94,6 +95,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     if iter >= iter_limit
         done_word = '(TIMEOUT)';
     end
+    max_joint_vel = max(max(abs(iter_step))) ./ lr;
+    update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
     sgtitle(sprintf("Inverse Kinematics via %s\n%s (%s)", plot_title, plot_subtitle, done_word));
     % Make video file
     fprintf('Saving video file to %s\n', video_fname);
@@ -131,11 +134,11 @@ function [st] = build_plot()
     st.ax_ellipse_lin = definesubplot(7);
     st.ax_ellipse_ang = definesubplot(8);
     st.text_iter = annotation('textbox', [0.01 .95 0.01 0.01], 'String', sprintf('Iter %2d', iternum), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
-    st.text_err = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
-    st.text_capped = annotation('textbox', [0.01 .80 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
+    st.text_err = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f\n\nJVel: nan', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
+    st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
 end
 
-function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, J, condnum, isotropy, capped_desc)
+function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, capped_desc)
     subplot(state.ax_pic);
     ax = show(model, getrobotconfig(model, joint_angles), 'Frames', 'off'); %, 'FastUpdate', true, 'PreservePlot', false);
     subplot(state.ax_pic);
@@ -147,7 +150,7 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     plot_3d_axis_transform(FK_space(robot, joint_angles), 'ax', ax, 'originscale', 0.001, 'scale', 0.2, 'LineWidth', 1);
     plot_3d_axis_transform(dest_T, 'ax', ax, 'originscale', 0.001, 'scale', 0.1, 'LineWidth', 3);
     state.text_iter.String = sprintf('Iter %2d', iternum);
-    state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f', linerr(end), angerr(end));
+    state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f\n\nJVel: %.1f', linerr(end), angerr(end), max_joint_vel);
     state.text_capped.String = capped_desc;
     hold off;
     subplot(state.ax_ellipse_lin);
