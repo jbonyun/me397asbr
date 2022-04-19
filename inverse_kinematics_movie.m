@@ -119,9 +119,11 @@ function [st] = build_plot()
     linerr = nan;
     angerr = nan;
     st.f = figure;
-    %fpos = st.f.get('Position');
+    fpos = st.f.get('Position');
     %st.f.set('Position', [fpos(1) fpos(2) fpos(3) fpos(3) * 2]);
-    st.f.set('Position', [50 1200 1300 600]);  % x, y (from bottom), width, height
+    %st.f.set('Position', [fpos(1) fpos(2) 1300 600]);  % x, y (from bottom), width, height
+    st.f.set('Position', [50 50 1300 600]);  % x, y (from bottom), width, height
+    %st.f.set('Position', [50 1200 1300 600]);  % x, y (from bottom), width, height
     definesubplot = @(loc) subtightplot(2, 4, loc, [0.065 0.065], [0.10 0.16], [0.03 0.04]);
     st.ax_pic = definesubplot([1 2 5 6]);
     st.ax_err = definesubplot(3);
