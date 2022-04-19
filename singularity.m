@@ -11,7 +11,7 @@ function singularity=singularity(robot,joint_angles)
     prod_expon = prod_expon * expm_sym(robot.screw(:, i) , joint_angles(i));
     end
     if (rank(J)<6)
-        singularity=ture;
+        singularity=true;
     else 
         singularity=false;
     end
