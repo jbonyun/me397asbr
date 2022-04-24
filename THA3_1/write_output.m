@@ -9,7 +9,9 @@ function write_output(fname, out)
     fid = fopen(fname, 'w');
 
     % Header
-    fprintf(fid, '%d, %d, %d, %s\n', out.NC, out.Nframes, fname);
+    [~, fjustname, fext] = fileparts(fname);
+    fbasename = strcat(fjustname, fext);
+    fprintf(fid, '%d, %d, %s\n', out.NC, out.Nframes, fbasename);
 
     % EM Post
     if isfield(out, 'empost')
