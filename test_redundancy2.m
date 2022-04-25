@@ -111,7 +111,7 @@ while norm(twist_b(1:3)) > 0.1 || norm(twist_b(4:6)) > 0.1
         end
     end
 %%
-clc;
+
 joint_angles=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
 redundancy_resolution(robot, joint_angles, end_fram)
 

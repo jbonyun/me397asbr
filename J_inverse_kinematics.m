@@ -43,8 +43,9 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_stepnorm] = J_
         J_daggr = dagger_J(Jb,7,6);
         step = J_daggr * twist_b * lr;
         % Update the solution
-        joint_angles = mod(joint_angles + step, 2*pi);
-        joint_angles = mod(joint_angles + step, 2*pi);
+        joint_angles = joint_angles + step;
+        %joint_angles = mod(joint_angles + step, 2*pi);
+        %joint_angles = mod(joint_angles + step, 2*pi);
         % Prepare state for next iteration
         twist_b = get_twist(joint_angles);
         % Save progress

@@ -90,3 +90,7 @@ end
 %%
 joint_angles=[0.1;0.1;0.1;0.1;0.1;0.1;0.1];
 J_transpose_kinematics(robot, joint_angles, end_fram)
+%%
+[screw,angle]=logmatirxs(end_fram)
+twist=screw*angle
+screw2=trans2twist(end_fram)
