@@ -23,11 +23,10 @@ function [T] = correspondence_points(ptsA, ptsB)
     H = zeros(3,3);
     for i = 1:n
         Hi = atilde(i, :)' * btilde(i, :);
-
         H = H + Hi;
     end
 
-    % Eig methd
+    % Eig method
     delta = [H(2,3)-H(3,2); H(3,1)-H(1,3); H(1,2)-H(2,1)];
     G = [trace(H) delta'; delta H+H' - trace(H) * eye(3)];
     [evec, eval] = eig(G);

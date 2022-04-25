@@ -19,7 +19,7 @@ function [step] = DLS_inverse_kinematics_step(robot, joint_angles, twist_to_targ
         lr = 0.5;  % Learning rate; how fast we descend along gradient. Notes say "1".
     end
     if nargin < 5
-        k = 0.01;  % Finite difference of angle for manipulability slope.
+        k = 0.01;  % Ridge adjustment size
     end
 
     Jb = J_body(robot, joint_angles);
