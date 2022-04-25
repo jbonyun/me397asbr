@@ -5,4 +5,4 @@
 *.mp4
 *.avi
 
-THA3_1/data/*outtest.txt
+*-outtest.txt
