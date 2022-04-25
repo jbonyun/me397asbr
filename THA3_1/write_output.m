@@ -15,14 +15,14 @@ function write_output(fname, out)
 
     % EM Post
     if isfield(out, 'empost')
-        fprintf(fid, '%f, %f, %f\n', out.empost(1), out.empost(2), out.empost(3));
+        fprintf(fid, '%8.2f, %8.2f, %8.2f\n', out.empost(1), out.empost(2), out.empost(3));
     else
         fprintf(fid, '%f, %f, %f\n', nan, nan, nan);
     end
 
     % Opt Post
     if isfield(out, 'optpost')
-        fprintf(fid, '%f, %f, %f\n', out.optpost(1), out.optpost(2), out.optpost(3));
+        fprintf(fid, '%8.2f, %8.2f, %8.2f\n', out.optpost(1), out.optpost(2), out.optpost(3));
     else
         fprintf(fid, '%f, %f, %f\n', nan, nan, nan);
     end
