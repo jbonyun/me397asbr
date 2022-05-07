@@ -43,3 +43,14 @@ function [robot] = robot_iiwa()
     for i = 1:robot.dof
         robot.bscrew(:, i) = adjoint_transform(inv(robot.home)) * robot.screw(:, i);
     end
+
+    % Limits on joints, stored in rad
+    robot.joint_limits = deg2rad([
+        -170 170;
+        -120 120;
+        -170 170;
+        -120 120;
+        -170 170;
+        -120 120;
+        -175 175;
+    ]);
