@@ -63,5 +63,11 @@ function [dq] = move_with_joint_limits(robot, start_angles, destTs)
 
 
     % Did that work?
-
+    % How close to desired solution?
+    [C*dq d C*dq-d]
+    % Did we keep bounds?
+    [A*dq b A*dq<b]
+    % Translation before and after
+    [trans2translation(FK_space(robot, start_angles+dq)) trans2translation(destTs) trans2translation(FK_space(robot, start_angles+dq)) - trans2translation(destTs)]
+    norm(trans2translation(FK_space(robot, start_angles+dq)) - trans2translation(destTs))
     
