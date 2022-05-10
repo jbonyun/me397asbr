@@ -35,7 +35,7 @@ start_Ts = FK_space(robot_w_tool, start_angles);
 target_axis = (rand(3, 1) - 0.5);
 target_axis = target_axis ./ vecnorm(target_axis);
 target_aa = [target_axis; rand(1,1) * 2*pi];
-target_translation = trans2translation(start_Ts) + randn(3, 1) * 2;
+target_translation = trans2translation(start_Ts) + randn(3, 1) * 100;
 target_Ts = rottranslation2trans(aa2rot(target_aa), target_translation);
 starting_error = vecnorm(trans2translation(target_Ts) - trans2translation(start_Ts));
 
