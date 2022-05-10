@@ -38,7 +38,7 @@ end
 px=inv(transpose(A_2)*A_2)*transpose(A_2)*B_2;
 X=[Rx,px;0 0 0 1]
 
-
+Px=lsqr(A_2,B_2)
 %% use 10 noisy data
 clear;
 [q_Robot_config, q_camera_config,t_Robot_config,t_camera_config ]=data_quaternion_noisy();
