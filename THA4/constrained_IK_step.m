@@ -48,6 +48,12 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
 
     % Distance from target orientation.
 
+    % Limit joint motion in any one step
+    joint_vel_limit = 0.2;
+    dqUA = eye(7);
+    dqUb = repmat(joint_vel_limit, 7, 1);
+    dqLA = -eye(7);
+    dqLb = repmat(-joint_vel_limit, 7, 1);
 
     % Set up the linear least squares problem.
     %   C,d s.t. we minimize Cx - d
@@ -60,6 +66,7 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
     A = [A; zeros(1, robot.dof)]; b = [b; 0];  % If no other limits, need something or it crashes;
     %A = [A; polyA]; b = [b; polyb];  % Include polygon mesh limit.
     %A = [A; qLA; qUA]; b = [b; qLb; qUb];  % Include joint limits.
+    %A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb];  % Include joint velocity limits.
     
     % Solve the optimization problem.
     [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b);
