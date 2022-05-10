@@ -13,10 +13,13 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
 
     % Apply FK to find tool tip pose in space frame.
     startTs = FK_space(robot, start_angles);
+    % Get rotation matrix of current pose in space frame
+    R = trans2rot(startTs);
     % Get t vector (translation of tip wrt space frame).
     t = trans2translation(startTs);
     % Get vector pgoal from the destination location.
     pgoal = trans2translation(twist2trans(twist_to_dest)) + t;
+    currError = t - pgoal;
 
     % Split the Jacobian into translation and rotation parts.
     Js = J_space(robot, start_angles);
@@ -59,8 +62,16 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
     %   C,d s.t. we minimize Cx - d
     %   A,b s.t. we require Ax <= b
     %  Solves x = lsqlin(C,d,A,b);
-    C = -skewsym(t) * Jalpha + Jeps;
-    d = pgoal - t;  % The change in tip location we are seeking.
+    Cloc = -skewsym(t) * Jalpha + Jeps;
+    dloc = pgoal - t;  % The change in tip location we are seeking.
+    weightloc = 1;
+    Z = [0; 0; 100];  % The tool tip from end effector in body frame.
+    Corient = -skewsym(R*Z) * Jalpha;
+    dorient = [0;0;0];
+    weightorient = 0;
+    %C = Cloc; d = dloc;
+    C = [weightloc .* Cloc; weightorient .* Corient]; d = [weightloc .* dloc; weightorient .* dorient];
+
     A = [];
     b = [];
     A = [A; zeros(1, robot.dof)]; b = [b; 0];  % If no other limits, need something or it crashes;
