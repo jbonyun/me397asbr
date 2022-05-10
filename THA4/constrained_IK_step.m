@@ -1,4 +1,4 @@
-function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
+function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, lr) %twist_to_dest, lr)
     % Calculates a path from startT to destT.
     % Respects the joint limits in the robot struct.
     % Input:
@@ -11,6 +11,10 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
     % Output:
     %  dq:          dofx1 vector of changes in joint angles
 
+    if isnan(constraint_center)
+        constraint_center = pgoal;
+    end
+
     % Apply FK to find tool tip pose in space frame.
     startTs = FK_space(robot, start_angles);
     % Get rotation matrix of current pose in space frame
@@ -18,7 +22,7 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
     % Get t vector (translation of tip wrt space frame).
     t = trans2translation(startTs);
     % Get vector pgoal from the destination location.
-    pgoal = trans2translation(twist2trans(twist_to_dest)) + t;
+    %pgoal = trans2translation(twist2trans(twist_to_dest)) + t;
     currError = t - pgoal;
 
     % Split the Jacobian into translation and rotation parts.
@@ -74,8 +78,8 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
     A = [];
     b = [];
     A = [A; zeros(1, robot.dof)]; b = [b; 0];  % If no other limits, need something or it crashes;
-    %A = [A; polyA]; b = [b; polyb];  % Include polygon mesh limit.
-    %A = [A; qLA; qUA]; b = [b; qLb; qUb];  % Include joint limits.
+    %A = [A; polyA]; b = [b; polyb];  % Include polyhedron mesh limit.
+    A = [A; qLA; qUA]; b = [b; qLb; qUb];  % Include joint limits.
     %A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb];  % Include joint velocity limits.
     
     % Solve the optimization problem.

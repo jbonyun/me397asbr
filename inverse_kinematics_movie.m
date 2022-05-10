@@ -59,7 +59,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         %pause(0.1);
         iter = iter + 1;
         % Calculate step
-        step = step_function(joint_angles, twist_b);
+        step = step_function(joint_angles, trans2translation(dest_T)); %twist_b);
         % Limit the step size, scaling the whole step down if it's too
         % large in any joint.
         if max(abs(step)) > joint_step_size_limit
