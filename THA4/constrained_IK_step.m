@@ -45,11 +45,10 @@ function [dq] = constrained_step(robot, start_angles, twist_to_dest, lr)
     [polyalpha,polybeta] = meshgrid(linspace(0, 2*pi * (1 - 1/m), m), linspace(0, 2*pi * (1 - 1/n), n));
     polyalpha = reshape(polyalpha, [], 1);
     polybeta = reshape(polybeta, [], 1);
-    polyA = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha) zeros(m*n, 3)];
-    polyA = polyA * Js;  % Change from cartesian to joint space.
-    polyb = repmat(max_distance, m*n, 1);
-
-    % Distance from target orientation.
+    polyA = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha)];
+    polyb = repmat(max_distance, m*n, 1) - polyA * (t - constraint_center);
+    polyA = polyA * Jeps;  % Change from cartesian to joint space.
+    
 
     % Limit joint motion in any one step
     joint_vel_limit = 0.2;
