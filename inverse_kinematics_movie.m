@@ -20,8 +20,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Some constants for the algorithm.
     angular_thresh = 999; %0.001;  % When to stop the search.
     linear_thresh = 1.0; %0.01;  % When to stop the search.
-    joint_step_size_limit = pi/8;  % Max amount any joint can move in a step.
     iter_limit = 200;
+    joint_step_size_limit = inf;  % Max amount any joint can move in a step.
     do_print = true;
 
     % Prepare the robot graphics model
