@@ -50,6 +50,9 @@ for i_test_cases = 1:numel(test_cases)
     % Invent a destination pose.
     target_joint_angles = test_cases{i_test_cases}{2};
     target_pose = FK_space(robot, target_joint_angles);
+    % Replace target orientation with starting orientation, because we're
+    % trying to work on translation and stability.
+    target_pose(1:3, 1:3) = trans2rot(start_pose);
     %step_function = @(ang, tw) step_function(ang, tw, target_pose);
     init_guess = joint_angles;
     fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
