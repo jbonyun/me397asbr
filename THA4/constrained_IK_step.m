@@ -20,6 +20,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     weightkinetic = 0.5;    % Weight on dq.
     weightloc = 1;          % Weight on distance from pgoal.
     weightorient = 10;      % Weight on change in orientation.
+    weightjointcenter = 0;% Weight on being near center of joint range.
 
     if isnan(constraint_center)
         constraint_center = pgoal;
@@ -48,6 +49,9 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     % Objective to minimize the translation distance to pgoal.
     Cloc = -skewsym(t) * Jalpha + Jeps;
     dloc = pgoal - t;  % The change in tip location we are seeking.
+
+    Cjointcenter = eye(7);
+    djointcenter = (robot.joint_limits(:,2)-robot.joint_limits(:,1))/2 - start_angles;
 
     % Objective to minimize the change in tool rotation from step to step.
     
@@ -94,6 +98,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     C = []; d = [];
     if weightkinetic ~= 0; C = [C; weightkinetic .* Ckinetic]; d = [d; weightkinetic .* dkinetic]; end
     if weightloc ~= 0; C = [C; weightloc .* Cloc]; d = [d; weightloc .* dloc]; end
+    if weightjointcenter ~= 0; C = [C; weightjointcenter .* Cjointcenter]; d = [d; weightjointcenter .* djointcenter]; end
     if weightorient ~= 0; C = [C; weightorient .* Corient]; d = [d; weightorient .* dorient]; end
 
     A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
