@@ -88,6 +88,11 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
         frames(iter+1) = getframe(plot_state.f);
         % Print progress
+        tool_vec = [0 0 100]';
+        vec_of_tool_before = trans2rot(FK_space(robot, start_angles)) * tool_vec;
+        vec_of_tool_after = trans2rot(FK_space(robot, joint_angles)) * tool_vec;
+        deg_rotated = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
+        fprintf('Degrees rotated total: %.2f\n', deg_rotated);
         if do_print && mod(iter, 1) == 0
             fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
         end
