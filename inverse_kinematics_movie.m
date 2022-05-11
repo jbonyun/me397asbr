@@ -75,6 +75,11 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         % Update the solution
         joint_angles = mod(joint_angles + step, 2*pi);
         joint_angles = joint_angles - ((joint_angles>pi) * 2 * pi);
+        % Are we on joint limits?
+        joint_limits_hit = sum(joint_angles > robot.joint_limits(:,2) - 1e-5) + sum(joint_angles < robot.joint_limits(:,1) + 1e-5);
+        if joint_limits_hit > 0
+            capped_desc = [capped_desc 'JOINT LIMIT'];
+        end
         % Prepare state for next iteration
         twist_b = get_twist(joint_angles);
         Jb = J_body(robot, joint_angles);
