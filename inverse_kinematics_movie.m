@@ -73,6 +73,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         %step = step * step_scale;  %% THIS IS PROBLEM
         % Update the solution
         joint_angles = mod(joint_angles + step, 2*pi);
+        joint_angles = joint_angles - ((joint_angles>pi) * 2 * pi);
         % Prepare state for next iteration
         twist_b = get_twist(joint_angles);
         Jb = J_body(robot, joint_angles);
