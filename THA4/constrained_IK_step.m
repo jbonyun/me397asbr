@@ -32,8 +32,8 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     % Get rotation matrix of current pose in space frame
     R = trans2rot(startTs);
     % Get t vector (translation of tip wrt space frame).
-    Z = [0; 0; 100];  % The tool tip from end effector in body frame.
-    tipTb = rottranslation2trans(eye(3), Z);
+    tipZ = [0; 0; 100];  % The tool tip from end effector in body frame.
+    tipTb = rottranslation2trans(eye(3), tipZ);
     t = trans2translation(startTs * tipTb);
 
     % Split the Jacobian into translation and rotation parts.
@@ -58,7 +58,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
 
     % Objective to minimize the change in tool rotation from step to step.
     
-    Corient = -skewsym(R*Z) * Jalpha;
+    Corient = -skewsym(R*tipZ) * Jalpha;
     dorient = [0;0;0];
 
 
@@ -94,7 +94,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     plane_normvector = [0 1 0];
     plane_P0 = [100; 10; 1100];
     plane_distance = 25;
-    planeA = -plane_normvector * R *(-skewsym(Z) * Jbalpha + Jbeps);
+    planeA = -plane_normvector * R *(-skewsym(tipZ) * Jbalpha + Jbeps);
     planeb = plane_normvector * t - plane_normvector * plane_P0 - plane_distance;
 
 
