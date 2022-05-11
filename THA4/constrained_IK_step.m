@@ -55,25 +55,37 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     
 
     % Limit joint motion in any one step
-    joint_vel_limit = 0.2;
+    joint_vel_limit = 0.1;
     dqUA = eye(7);
     dqUb = repmat(joint_vel_limit, 7, 1);
     dqLA = -eye(7);
     dqLb = repmat(joint_vel_limit, 7, 1);
 
     % Set up the linear least squares problem.
-    %   C,d s.t. we minimize Cx - d
+    %   C,d s.t. we minimize norm(Cx - d)
     %   A,b s.t. we require Ax <= b
     %  Solves x = lsqlin(C,d,A,b);
+
+    % Objective to minimize square change in each joint.
+    Ckinetic = eye(7);
+    dkinetic = zeros(7, 1);
+    weightkinetic = 0.1;
+    
+    % Objective to minimize the translation distance to pgoal.
     Cloc = -skewsym(t) * Jalpha + Jeps;
     dloc = pgoal - t;  % The change in tip location we are seeking.
     weightloc = 1;
+
+    % Objective to minimize the change in tool rotation from step to step.
     Z = [0; 0; 100];  % The tool tip from end effector in body frame.
     Corient = -skewsym(R*Z) * Jalpha;
     dorient = [0;0;0];
     weightorient = 0;
-    %C = Cloc; d = dloc;
-    C = [weightloc .* Cloc; weightorient .* Corient]; d = [weightloc .* dloc; weightorient .* dorient];
+    
+    C = []; d = [];
+    if weightkinetic ~= 0; C = [C; weightkinetic .* Ckinetic]; d = [d; weightkinetic .* dkinetic]; end
+    if weightloc ~= 0; C = [C; weightloc .* Cloc]; d = [d; weightloc .* dloc]; end
+    if weightorient ~= 0; C = [C; weightorient .* Corient]; d = [d; weightorient .* dorient]; end
 
     A = [];
     b = [];
