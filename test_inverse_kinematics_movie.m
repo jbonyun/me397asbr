@@ -42,6 +42,7 @@ lr = 1;
 method_name = 'Constrained'; method_fname = 'Constrained'; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr);
 plot_subtitle = sprintf('%s, lr=%.2f, ', case_desc, lr); %%%capped \\pi/8', case_desc, lr);
 video_fname = sprintf('video_%s_%s_lr%4.2f.mp4', method_fname, case_fname, lr);
+do_plot_details = true;
 
 for i_test_cases = 1:numel(test_cases)
     %i = test_cases(i_test_cases);
@@ -54,11 +55,10 @@ for i_test_cases = 1:numel(test_cases)
     % Replace target orientation with starting orientation, because we're
     % trying to work on translation and stability.
     target_pose(1:3, 1:3) = trans2rot(start_pose);
-    %step_function = @(ang, tw) step_function(ang, tw, target_pose);
     init_guess = joint_angles;
     fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
     % Now solve it.
-    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, method_name, plot_subtitle, video_fname, lr);
+    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, do_plot_details, method_name, plot_subtitle, video_fname, lr);
     ik_pose = FK_space(robot, ik_angles);
     % Print results
     fprintf('Max joint velocity: %.2f %s\n', max(max(abs(iter_step))) ./ lr, mat2str(max(abs(iter_step)) ./ lr, 3));

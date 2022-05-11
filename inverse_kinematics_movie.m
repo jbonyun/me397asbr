@@ -1,4 +1,4 @@
-function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, plot_title, plot_subtitle, video_fname, lr)
+function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, start_angles, dest_T, step_function, do_plot_details, plot_title, plot_subtitle, video_fname, lr)
     % Plot the iterations of J-inverse IK
     % Inputs:
     %   robot: struct with robot description
@@ -28,7 +28,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     kuka = loadrobot('kukaIiwa14');
 
     % Prepare plot and make a lambda to simplify the call to update.
-    plot_state = build_plot();
+    plot_state = build_plot(do_plot_details);
     sgtitle(sprintf("Inverse Kinematics via %s\n%s", plot_title, plot_subtitle));
     update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc);
 
@@ -142,22 +142,25 @@ function twist = get_twist_ex(robot, joint_angles, Tsd)
     twist = screw2twist(screw, theta);
 end
 
-function [st] = build_plot()
+function [st] = build_plot(do_plot_details)
     iternum = 0;
     linerr = nan;
     angerr = nan;
+    st.has_details = do_plot_details;
     st.f = figure;
     fpos = st.f.get('Position');
-    %st.f.set('Position', [fpos(1) fpos(2) fpos(3) fpos(3) * 2]);
-    %st.f.set('Position', [fpos(1) fpos(2) 1300 600]);  % x, y (from bottom), width, height
-    st.f.set('Position', [50 50 1300 600]);  % x, y (from bottom), width, height
-    %st.f.set('Position', [50 1200 1300 600]);  % x, y (from bottom), width, height
-    definesubplot = @(loc) subtightplot(2, 4, loc, [0.065 0.065], [0.10 0.16], [0.03 0.04]);
-    st.ax_pic = definesubplot([1 2 5 6]);
-    st.ax_err = definesubplot(3);
-    st.ax_condiso = definesubplot(4);
-    st.ax_ellipse_lin = definesubplot(7);
-    st.ax_ellipse_ang = definesubplot(8);
+    if do_plot_details
+        st.f.set('Position', [50 50 1300 600]);  % x, y (from bottom), width, height
+        definesubplot = @(loc) subtightplot(2, 4, loc, [0.065 0.065], [0.10 0.16], [0.03 0.04]);
+        st.ax_pic = definesubplot([1 2 5 6]);
+        st.ax_err = definesubplot(3);
+        st.ax_condiso = definesubplot(4);
+        st.ax_ellipse_lin = definesubplot(7);
+        st.ax_ellipse_ang = definesubplot(8);
+    else
+        st.f.set('Position', [50 50 800 600]);  % x, y (from bottom), width, height
+        st.ax_pic = gca;
+    end
     st.text_iter = annotation('textbox', [0.01 .95 0.01 0.01], 'String', sprintf('Iter %2d', iternum), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
     st.text_err = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f\n\nJVel: nan', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
     st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
@@ -183,39 +186,41 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f\n\nJVel: %.1f', linerr(end), angerr(end), max_joint_vel);
     state.text_capped.String = capped_desc;
     hold off;
-    subplot(state.ax_ellipse_lin);
-    semilogy(stepnorm);
-    title('Log Step Norm');
-    %ellipsoid_plot_linear(J, 'Axis', gca);
-    %view([-195 15]);
-    %ylim([-2 2]); xlim([-2 2]); ylim([-2 2]);
-    subplot(state.ax_ellipse_ang);
-    plot(degfromstart);
-    title('Deg from Start');
-    ylim([0 180]);
-    yticks([0 45 90 135 180]);
-    %ellipsoid_plot_angular(J, 'Axis', gca);
-    %view([-195 15]);
-    subplot(state.ax_err);
-    yyaxis left;
-    semilogy(linerr);
-    ylim([1e-1 inf]);
-    ylabel('Linear');
-    yyaxis right;
-    semilogy(angerr);
-    ylim([1e-2 inf]);
-    ylabel('Angular');
-    title('Log Error');
-    subplot(state.ax_condiso);
-    yyaxis left;
-    plot(condnum);
-    ylim([0 inf]);
-    ylabel('Cond#');
-    %hold on;
-    yyaxis right;
-    plot(isotropy);
-    ylim([0 inf]);
-    %semilogy(isotropy);
-    ylabel('Isotropy');
-    title('Condition/Isotropy');
+    if state.has_details
+        subplot(state.ax_ellipse_lin);
+        semilogy(stepnorm);
+        title('Log Step Norm');
+        %ellipsoid_plot_linear(J, 'Axis', gca);
+        %view([-195 15]);
+        %ylim([-2 2]); xlim([-2 2]); ylim([-2 2]);
+        subplot(state.ax_ellipse_ang);
+        plot(degfromstart);
+        title('Deg from Start');
+        ylim([0 180]);
+        yticks([0 45 90 135 180]);
+        %ellipsoid_plot_angular(J, 'Axis', gca);
+        %view([-195 15]);
+        subplot(state.ax_err);
+        yyaxis left;
+        semilogy(linerr);
+        ylim([1e-1 inf]);
+        ylabel('Linear');
+        yyaxis right;
+        semilogy(angerr);
+        ylim([1e-2 inf]);
+        ylabel('Angular');
+        title('Log Error');
+        subplot(state.ax_condiso);
+        yyaxis left;
+        plot(condnum);
+        ylim([0 inf]);
+        ylabel('Cond#');
+        %hold on;
+        yyaxis right;
+        plot(isotropy);
+        ylim([0 inf]);
+        %semilogy(isotropy);
+        ylabel('Isotropy');
+        title('Condition/Isotropy');
+    end
 end
