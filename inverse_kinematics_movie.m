@@ -154,6 +154,7 @@ function [st] = build_plot()
 end
 
 function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, capped_desc)
+    tool_vector_in_body = [0 0 100]';
     subplot(state.ax_pic);
     ax = show(model, getrobotconfig(model, joint_angles), 'Frames', 'off'); %, 'FastUpdate', true, 'PreservePlot', false);
     subplot(state.ax_pic);
@@ -162,8 +163,11 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     zlim([-0.1 1.5]);
     view([-195 15]);
     hold all;
-    plot_3d_axis_transform(FK_space(robot, joint_angles), 'ax', ax, 'originscale', 0.001, 'scale', 0.2, 'LineWidth', 1);
+    eeTs = FK_space(robot, joint_angles);
+    %plot_3d_axis_transform(eeTs, 'ax', ax, 'originscale', 0.001, 'scale', 0.2, 'LineWidth', 1);
     plot_3d_axis_transform(dest_T, 'ax', ax, 'originscale', 0.001, 'scale', 0.1, 'LineWidth', 3);
+    tipTs = eeTs * rottranslation2trans(eye(3), tool_vector_in_body);
+    plot_3d_arrow(trans2translation(eeTs)/1000, (trans2translation(tipTs)-trans2translation(eeTs))/1000, norm(tool_vector_in_body)/1000, 'Color', 'b', 'LineWidth', 5, 'MaxHeadSize', 3);
     state.text_iter.String = sprintf('Iter %2d', iternum);
     state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f\n\nJVel: %.1f', linerr(end), angerr(end), max_joint_vel);
     state.text_capped.String = capped_desc;
