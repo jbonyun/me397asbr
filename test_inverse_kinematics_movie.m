@@ -40,8 +40,8 @@ lr = 1;
 %method_name = 'Smart'; method_fname = 'Smart'; step_function = @(ang, tw) J_combination_inverse_kinematics_step(robot, ang, tw, lr);
 %method_name = 'Constrained With Off-Goal Constraint'; method_fname = 'Constrained'; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, [0 0 800]', lr);
 method_name = 'Constrained'; method_fname = 'Constrained'; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr);
-plot_subtitle = sprintf('%s, lr=%.2f, uncapped', case_desc, lr); %%%capped \\pi/8', case_desc, lr);
-video_fname = sprintf('video_%s_%s_uncapped_lr%4.2f.mp4', method_fname, case_fname, lr);
+plot_subtitle = sprintf('%s, lr=%.2f, ', case_desc, lr); %%%capped \\pi/8', case_desc, lr);
+video_fname = sprintf('video_%s_%s_lr%4.2f.mp4', method_fname, case_fname, lr);
 
 for i_test_cases = 1:numel(test_cases)
     %i = test_cases(i_test_cases);
