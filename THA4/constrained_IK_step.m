@@ -99,23 +99,27 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     if exitflag == -2
         % It failed to work because it is infeasible.
         % Try again, but without the polyhedron/sphere constraint.
-        fprintf('Removed proximity constraint in order to make progress\n');
+        prox_active_word = 'inactive';
         A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
         A = [A; qLA; qUA]; b = [b; qLb; qUb];  % Include joint limits.
         A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb];  % Include joint velocity limits.
         % Solve it again.
         [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b, [], [], [], [], [], optopt);
     else
+        prox_active_word = 'active';
         % Did we get inside the sphere?
-        dist = norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal);
-        if dist > max_distance
-            fprintf('After optimization with sphere constraint, solution was %.3fmm from goal, which is outside the sphere\n', dist);
-        end
+        %dist = norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal);
+        %if dist > max_distance
+        %    fprintf('After optimization with sphere constraint, solution was %.3fmm from goal, which is outside the sphere\n', dist);
+        %end
     end
     
     if numel(dq) == 0
         assert(numel(dq) > 0);
     end
+
+    linearized_dist = norm(Cloc*dq-dloc);
+    dist = norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal);
 
     % Did that work?
     % How close to desired solution?
@@ -125,6 +129,17 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
         fprintf('Didnt meet %d of the constraints\n', sum(A*dq>(b+1e-8)));
         [A*dq b A*dq<=(b+1e-8)]
     end
+
+    % Check if we're up against a joint limit, and display that.
+    joint_limits_hit = sum(qUA*dq - qUb > -1e-4) + sum(qLA*dq - qLb > -1e-4);
+    if joint_limits_hit > 0
+        %fprintf('Hitting a joint limit\n');
+        joint_limit_word = 'Hitting joint limit';
+    else
+        joint_limit_word = '';
+    end
+
+    fprintf('     Prox %10s  Dist: %.2f  TheorDist: %.2f  # Unmet const: %d   Joint limits hit: %d\n', prox_active_word, dist, linearized_dist, sum(A*dq>(b+1e-8)), joint_limits_hit);
     
     % Translation before and after
     %[trans2translation(FK_space(robot, start_angles)) trans2translation(FK_space(robot, start_angles+dq)) pgoal trans2translation(FK_space(robot, start_angles+dq)) - pgoal]
