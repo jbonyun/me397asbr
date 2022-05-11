@@ -109,7 +109,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
         % Did we get inside the sphere?
         dist = norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal);
         if dist > max_distance
-            fprintf('After optimization with sphere constraint, solution was %f\n', dist);
+            fprintf('After optimization with sphere constraint, solution was %.3fmm from goal, which is outside the sphere\n', dist);
         end
     end
     
@@ -122,7 +122,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     %[C*dq d C*dq-d]
     % Did we keep bounds?
     if ~all(A*dq<=(b+1e-8))
-        fprintf('Didnt meet all constraints\n');
+        fprintf('Didnt meet %d of the constraints\n', sum(A*dq>(b+1e-8)));
         [A*dq b A*dq<=(b+1e-8)]
     end
     
