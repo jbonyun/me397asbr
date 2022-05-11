@@ -162,6 +162,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     joint_limits_hit = sum(qUA*dq - qUb > -1e-4) + sum(qLA*dq - qLb > -1e-4);
     if joint_limits_hit > 0
         joint_limit_word = 'Hitting joint limit';
+        fprintf('Joint limits exceeded on joints: %s\n', mat2str([find(qLA*dq - qLb > -1e-4)'  find(qUA*dq - qUb > -1e-4)']'));
     else
         joint_limit_word = '';
     end
