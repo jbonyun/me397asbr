@@ -87,12 +87,10 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     if weightloc ~= 0; C = [C; weightloc .* Cloc]; d = [d; weightloc .* dloc]; end
     if weightorient ~= 0; C = [C; weightorient .* Corient]; d = [d; weightorient .* dorient]; end
 
-    A = [];
-    b = [];
-    A = [A; zeros(1, robot.dof)]; b = [b; 0];  % If no other limits, need something or it crashes;
-    %A = [A; polyA]; b = [b; polyb];  % Include polyhedron mesh limit.
+    A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
     A = [A; qLA; qUA]; b = [b; qLb; qUb];  % Include joint limits.
-    %A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb];  % Include joint velocity limits.
+    A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb];  % Include joint velocity limits.
+    A = [A; polyA]; b = [b; polyb];  % Include polyhedron mesh limit.
     
     % Solve the optimization problem.
     [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b);
