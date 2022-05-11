@@ -119,13 +119,16 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
 
     % Did that work?
     % How close to desired solution?
-    [C*dq d C*dq-d]
+    %[C*dq d C*dq-d]
     % Did we keep bounds?
-    [A*dq b A*dq<b]
-    all(A*dq<b)
+    if ~all(A*dq<=(b+1e-8))
+        fprintf('Didnt meet all constraints\n');
+        [A*dq b A*dq<=(b+1e-8)]
+    end
+    
     % Translation before and after
-    [trans2translation(FK_space(robot, start_angles+dq)) pgoal trans2translation(FK_space(robot, start_angles+dq)) - pgoal]
-    norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal)
+    %[trans2translation(FK_space(robot, start_angles)) trans2translation(FK_space(robot, start_angles+dq)) pgoal trans2translation(FK_space(robot, start_angles+dq)) - pgoal]
+    %norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal)
 
     % Reduce the returned dq by the learning rate.
     dq = dq * lr;
