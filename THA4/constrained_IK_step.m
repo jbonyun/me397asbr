@@ -1,4 +1,4 @@
-function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, lr) %twist_to_dest, lr)
+function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_center, lr, varargin) %twist_to_dest, lr)
     % Calculates a path from startT to destT.
     % Respects the joint limits in the robot struct.
     % Input:
@@ -11,17 +11,18 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     % Output:
     %  dq:          dofx1 vector of changes in joint angles
 
-    % Settings 
-    % Limits to apply.
-    use_joint_limits = true;% Apply physical joint limits or not.
-    joint_vel_limit = 1.0;  % Radian cap on any joint (nan for none).
-    max_distance = 3;       % The radius of the sphere in mm (nan for none)
-    use_plane_limit = false;
-    % Weights for objective function. Use 0 to remove.
-    weightkinetic = 0.5;    % Weight on dq.
-    weightloc = 1;          % Weight on distance from pgoal.
-    weightorient = 10;      % Weight on change in orientation.
-    weightjointcenter = 0;% Weight on being near center of joint range.
+    p = inputParser;
+    addParameter(p, 'use_joint_limits', true, @islogical);
+    addParameter(p, 'joint_vel_limit', nan, @isfloat);
+    addParameter(p, 'max_distance_from_goal', nan, @isfloat);
+    addParameter(p, 'use_plane_limit', false, @islogical);
+    addParameter(p, 'weight_loc', 1.0, @isfloat);
+    addParameter(p, 'weight_kinetic', 0, @isfloat);
+    addParameter(p, 'weight_jointcenter', 0.0, @isfloat);
+    addParameter(p, 'weight_orientation', 0.0, @isfloat);
+    %p.KeepUnmatched = true;
+    parse(p, varargin{:});
+    args = p.Results;
 
     if isnan(constraint_center)
         constraint_center = pgoal;
@@ -75,9 +76,9 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
 
     % Limit joint motion in any one step
     dqUA = eye(7);
-    dqUb = repmat(joint_vel_limit, 7, 1);
+    dqUb = repmat(args.joint_vel_limit, 7, 1);
     dqLA = -eye(7);
-    dqLb = repmat(joint_vel_limit, 7, 1);
+    dqLb = repmat(args.joint_vel_limit, 7, 1);
 
     % Limit allowed distance from target.
     % Stay within `max_distance` of target point at all times.
@@ -88,7 +89,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     polyalpha = reshape(polyalpha, [], 1);
     polybeta = reshape(polybeta, [], 1);
     polyA = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha)];
-    polyb = repmat(max_distance, m*n, 1) - polyA * (t - constraint_center);
+    polyb = repmat(args.max_distance_from_goal, m*n, 1) - polyA * (t - constraint_center);
     polyA = polyA * Jeps;  % Change from cartesian to joint space.
 
     plane_normvector = [0 1 0];
@@ -104,16 +105,16 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     %  Solves x = lsqlin(C,d,A,b);
 
     C = []; d = [];
-    if weightkinetic ~= 0; C = [C; weightkinetic .* Ckinetic]; d = [d; weightkinetic .* dkinetic]; end
-    if weightloc ~= 0; C = [C; weightloc .* Cloc]; d = [d; weightloc .* dloc]; end
-    if weightjointcenter ~= 0; C = [C; weightjointcenter .* Cjointcenter]; d = [d; weightjointcenter .* djointcenter]; end
-    if weightorient ~= 0; C = [C; weightorient .* Corient]; d = [d; weightorient .* dorient]; end
+    if args.weight_kinetic ~= 0; C = [C; args.weight_kinetic .* Ckinetic]; d = [d; args.weight_kinetic .* dkinetic]; end
+    if args.weight_loc ~= 0; C = [C; args.weight_loc .* Cloc]; d = [d; args.weight_loc .* dloc]; end
+    if args.weight_jointcenter ~= 0; C = [C; args.weight_jointcenter .* Cjointcenter]; d = [d; args.weight_jointcenter .* djointcenter]; end
+    if args.weight_orientation ~= 0; C = [C; args.weight_orientation .* Corient]; d = [d; args.weight_orientation .* dorient]; end
 
     A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
-    if use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
-    if ~isnan(joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
-    if ~isnan(max_distance) A = [A; polyA]; b = [b; polyb]; end
-    if use_plane_limit A = [A; planeA]; b = [b; planeb]; end
+    if args.use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
+    if ~isnan(args.joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
+    if ~isnan(args.max_distance_from_goal) A = [A; polyA]; b = [b; polyb]; end
+    if args.use_plane_limit A = [A; planeA]; b = [b; planeb]; end
     
     % Solve the optimization problem.
     optopt = optimoptions(@lsqlin, 'Algorithm', 'interior-point', 'Display', 'off');
@@ -124,9 +125,9 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
         % Try again, but without the polyhedron/sphere constraint.
         prox_active_word = 'inactive';
         A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
-        if use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
-        if ~isnan(joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
-        if use_plane_limit A = [A; planeA]; b = [b; planeb]; end
+        if args.use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
+        if ~isnan(args.joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
+        if args.use_plane_limit A = [A; planeA]; b = [b; planeb]; end
         % Solve it again.
         [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b, [], [], [], [], [], optopt);
     else
