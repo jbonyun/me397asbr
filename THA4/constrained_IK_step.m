@@ -59,7 +59,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     dqUA = eye(7);
     dqUb = repmat(joint_vel_limit, 7, 1);
     dqLA = -eye(7);
-    dqLb = repmat(-joint_vel_limit, 7, 1);
+    dqLb = repmat(joint_vel_limit, 7, 1);
 
     % Set up the linear least squares problem.
     %   C,d s.t. we minimize Cx - d
