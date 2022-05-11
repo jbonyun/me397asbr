@@ -43,7 +43,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     Jb = J_body(robot, joint_angles);
     twist_b = get_twist(joint_angles);
     iter_errang(iter+1) = norm(twist_b(1:3));
-    iter_errlin(iter+1) = norm(twist_b(4:6));
+    iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(FK_space(robot, joint_angles))); %norm(trans2translation(twist2trans(twist_b))); %norm(twist_b(4:6));
     iter_cond(iter+1) = J_condition(Jb);
     iter_isotropy(iter+1) = J_isotropy(Jb);
     iter_step(iter+1, 1:robot.dof) = nan;
@@ -52,10 +52,10 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, '');
     frames(iter+1) = getframe(plot_state.f);
     if do_print
-        fprintf('%4s  %8s  %9s  %10s  %12s  %s\n', 'Iter', 'StepNorm', 'ErrAng', 'ErrLin', 'Cond#', 'Joint Angles');    
-        fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 5));
+        fprintf('%4s  %8s  %9s  %10s  %7s %12s  %s\n', 'Iter', 'StepNorm', 'ErrAng', 'ErrLin', 'DegRot', 'Cond#', 'Joint Angles');    
+        fprintf('%4d  %8f  %9f  %10f  %7.2f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), 0, iter_cond(iter+1), mat2str(joint_angles', 5));
     end
-    while (norm(twist_b(1:3)) > angular_thresh || norm(twist_b(4:6)) > linear_thresh) && iter < iter_limit
+    while (norm(twist_b(1:3)) > angular_thresh || iter_errlin(iter+1) > linear_thresh) && iter < iter_limit
         drawnow;
         %pause(0.1);
         iter = iter + 1;
@@ -80,7 +80,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         Jb = J_body(robot, joint_angles);
         % Save progress
         iter_errang(iter+1) = norm(twist_b(1:3));
-        iter_errlin(iter+1) = norm(twist_b(4:6));
+        iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(FK_space(robot, joint_angles))); %norm(trans2translation(twist2trans(twist_b))); %norm(twist_b(4:6));
         iter_cond(iter+1) = J_condition(Jb);
         iter_isotropy(iter+1) = J_isotropy(Jb);
         iter_step(iter+1, 1:robot.dof) = step;
@@ -88,14 +88,14 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         tool_vec = [0 0 100]';
         vec_of_tool_before = trans2rot(FK_space(robot, start_angles)) * tool_vec;
         vec_of_tool_after = trans2rot(FK_space(robot, joint_angles)) * tool_vec;
-        fprintf('Degrees rotated total: %.2f\n', deg_rotated);
         iter_degfromstart(iter+1) = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
         max_joint_vel = max(abs(step)) ./ lr;
         update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, capped_desc);
         frames(iter+1) = getframe(plot_state.f);
         % Print progress
+        %fprintf('Degrees rotated total: %.2f\n', deg_rotated);
         if do_print && mod(iter, 1) == 0
-            fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
+            fprintf('%4d  %8f  %9f  %10f  %7.2f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_degfromstart(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
         end
     end
     done_word = 'done';
