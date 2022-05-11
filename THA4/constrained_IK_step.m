@@ -30,10 +30,9 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     % Get rotation matrix of current pose in space frame
     R = trans2rot(startTs);
     % Get t vector (translation of tip wrt space frame).
-    t = trans2translation(startTs);
-    % Get vector pgoal from the destination location.
-    %pgoal = trans2translation(twist2trans(twist_to_dest)) + t;
-    currError = t - pgoal;
+    Z = [0; 0; 100];  % The tool tip from end effector in body frame.
+    tipTb = rottranslation2trans(eye(3), Z);
+    t = trans2translation(startTs * tipTb);
 
     % Split the Jacobian into translation and rotation parts.
     Js = J_space(robot, start_angles);
@@ -51,7 +50,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     dloc = pgoal - t;  % The change in tip location we are seeking.
 
     % Objective to minimize the change in tool rotation from step to step.
-    Z = [0; 0; 100];  % The tool tip from end effector in body frame.
+    
     Corient = -skewsym(R*Z) * Jalpha;
     dorient = [0;0;0];
 
@@ -130,6 +129,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
 
     % Translation before and after
     pafter = trans2translation(FK_space(robot, start_angles+dq));
+    ptipafter = trans2translation(FK_space(robot, start_angles+dq) * tipTb);
     %[t pafter pgoal pafter - pgoal]
 
     % Final distance if all the linearization we assumed holds (assumes lr=1).
