@@ -103,7 +103,9 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         iter_degfromstart(iter+1) = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
         iter_points(iter+1, :) = trans2translation(tipTs);
         max_joint_vel = max(abs(step)) ./ lr;
+        if mod(iter, 1) == 0
             update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, iter_points, capped_desc);
+        end
         frames(iter+1) = getframe(plot_state.f);
         % Print progress
         %fprintf('Degrees rotated total: %.2f\n', deg_rotated);
