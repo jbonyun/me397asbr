@@ -93,7 +93,29 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     A = [A; polyA]; b = [b; polyb];  % Include polyhedron mesh limit.
     
     % Solve the optimization problem.
-    [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b);
+    optopt = optimoptions(@lsqlin, 'Algorithm', 'interior-point', 'Display', 'off');
+    [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b, [], [], [], [], [], optopt);
+    % Did that work?
+    if exitflag == -2
+        % It failed to work because it is infeasible.
+        % Try again, but without the polyhedron/sphere constraint.
+        fprintf('Removed proximity constraint in order to make progress\n');
+        A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
+        A = [A; qLA; qUA]; b = [b; qLb; qUb];  % Include joint limits.
+        A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb];  % Include joint velocity limits.
+        % Solve it again.
+        [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b, [], [], [], [], [], optopt);
+    else
+        % Did we get inside the sphere?
+        dist = norm(trans2translation(FK_space(robot, start_angles+dq)) - pgoal);
+        if dist > max_distance
+            fprintf('After optimization with sphere constraint, solution was %f\n', dist);
+        end
+    end
+    
+    if numel(dq) == 0
+        assert(numel(dq) > 0);
+    end
 
     % Did that work?
     % How close to desired solution?
