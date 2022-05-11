@@ -61,8 +61,12 @@ for i_test_cases = 1:numel(test_cases)
     fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
     fprintf('Angular error in ZYZ: %s\n', mat2str((rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)))', 5));
     fprintf('Linear error in xyz: %s\n', mat2str((trans2translation(target_pose)-trans2translation(ik_pose))', 5));
-    assert(all(rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)) < 1e-1, 'all') || all(rot2rpy(trans2rot(target_pose))-rot2rpy(trans2rot(ik_pose)) < 1e-1, 'all'));
-    assert(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 1e-0, 'all'));
+    if ~(all(rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)) < 1e-1, 'all') || all(rot2rpy(trans2rot(target_pose))-rot2rpy(trans2rot(ik_pose)) < 1e-1, 'all'))
+        fprintf('** Rotation not converged **\n');
+    end
+    if ~(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 1e-0, 'all'))
+        fprintf('** Translation not converged **\n');
+    end
     
 %     figure;
 %     subplot(2, 1, 1);
