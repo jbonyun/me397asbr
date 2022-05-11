@@ -30,7 +30,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot();
     sgtitle(sprintf("Inverse Kinematics via %s\n%s", plot_title, plot_subtitle));
-    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, cap_desc);
+    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc);
 
     % Helper lambda for getting the twist.
     get_twist = @(joint_angles) get_twist_ex(robot, joint_angles, dest_T);
@@ -40,16 +40,21 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
 
     % Iteration 0 calculations
     iter = 0;
-    Jb = J_body(robot, joint_angles);
+    tipZb = [0 0 100]';
+    tipTb = rottranslation2trans(eye(3), tipZb);
     twist_b = get_twist(joint_angles);
+    Jb = J_body(robot, joint_angles);
+    eeTs = FK_space(robot, joint_angles);
+    tipTs = eeTs * tipTb;
     iter_errang(iter+1) = norm(twist_b(1:3));
-    iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(FK_space(robot, joint_angles))); %norm(trans2translation(twist2trans(twist_b))); %norm(twist_b(4:6));
+    iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(tipTs));
     iter_cond(iter+1) = J_condition(Jb);
     iter_isotropy(iter+1) = J_isotropy(Jb);
     iter_step(iter+1, 1:robot.dof) = nan;
     iter_stepnorm(iter+1) = nan;
     iter_degfromstart(iter+1) = 0;
-    update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, '');
+    iter_points(iter+1, :) = trans2translation(tipTs);
+    update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, iter_points, '');
     frames(iter+1) = getframe(plot_state.f);
     if do_print
         fprintf('%4s  %8s  %9s  %10s  %7s %12s  %s\n', 'Iter', 'StepNorm', 'ErrAng', 'ErrLin', 'DegRot', 'Cond#', 'Joint Angles');    
@@ -83,9 +88,11 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         % Prepare state for next iteration
         twist_b = get_twist(joint_angles);
         Jb = J_body(robot, joint_angles);
+        eeTs = FK_space(robot, joint_angles);
+        tipTs = eeTs * tipTb;
         % Save progress
         iter_errang(iter+1) = norm(twist_b(1:3));
-        iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(FK_space(robot, joint_angles))); %norm(trans2translation(twist2trans(twist_b))); %norm(twist_b(4:6));
+        iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(tipTs)); %norm(trans2translation(twist2trans(twist_b))); %norm(twist_b(4:6));
         iter_cond(iter+1) = J_condition(Jb);
         iter_isotropy(iter+1) = J_isotropy(Jb);
         iter_step(iter+1, 1:robot.dof) = step;
@@ -94,8 +101,9 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         vec_of_tool_before = trans2rot(FK_space(robot, start_angles)) * tool_vec;
         vec_of_tool_after = trans2rot(FK_space(robot, joint_angles)) * tool_vec;
         iter_degfromstart(iter+1) = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
+        iter_points(iter+1, :) = trans2translation(tipTs);
         max_joint_vel = max(abs(step)) ./ lr;
-        update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, capped_desc);
+            update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, iter_points, capped_desc);
         frames(iter+1) = getframe(plot_state.f);
         % Print progress
         %fprintf('Degrees rotated total: %.2f\n', deg_rotated);
@@ -108,7 +116,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         done_word = 'TIMEOUT';
     end
     max_joint_vel = max(max(abs(iter_step))) ./ lr;
-    update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, capped_desc);
+    update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, iter_points, capped_desc);
     sgtitle(sprintf("Inverse Kinematics via %s\n%s (%s)", plot_title, plot_subtitle, done_word));
     frames(iter+2) = getframe(plot_state.f);
     % Make video file
@@ -153,7 +161,7 @@ function [st] = build_plot()
     st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
 end
 
-function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, capped_desc)
+function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, points, capped_desc)
     tool_vector_in_body = [0 0 100]';
     subplot(state.ax_pic);
     ax = show(model, getrobotconfig(model, joint_angles), 'Frames', 'off'); %, 'FastUpdate', true, 'PreservePlot', false);
@@ -167,7 +175,8 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     %plot_3d_axis_transform(eeTs, 'ax', ax, 'originscale', 0.001, 'scale', 0.2, 'LineWidth', 1);
     plot_3d_axis_transform(dest_T, 'ax', ax, 'originscale', 0.001, 'scale', 0.1, 'LineWidth', 3);
     tipTs = eeTs * rottranslation2trans(eye(3), tool_vector_in_body);
-    plot_3d_arrow(trans2translation(eeTs)/1000, (trans2translation(tipTs)-trans2translation(eeTs))/1000, norm(tool_vector_in_body)/1000, 'Color', 'b', 'LineWidth', 5, 'MaxHeadSize', 3);
+    plot_3d_arrow(trans2translation(eeTs)/1000, (trans2translation(tipTs)-trans2translation(eeTs))/1000, norm(tool_vector_in_body)/1000, 'Color', 'm', 'LineWidth', 5, 'MaxHeadSize', 3);
+    plot3(points(:,1)/1000, points(:,2)/1000, points(:,3)/1000, 'k-o');
     state.text_iter.String = sprintf('Iter %2d', iternum);
     state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f\n\nJVel: %.1f', linerr(end), angerr(end), max_joint_vel);
     state.text_capped.String = capped_desc;
