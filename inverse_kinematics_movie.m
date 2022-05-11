@@ -30,7 +30,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot();
     sgtitle(sprintf("Inverse Kinematics via %s\n%s", plot_title, plot_subtitle));
-    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, cap_desc);
+    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, cap_desc);
 
     % Helper lambda for getting the twist.
     get_twist = @(joint_angles) get_twist_ex(robot, joint_angles, dest_T);
@@ -48,7 +48,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     iter_isotropy(iter+1) = J_isotropy(Jb);
     iter_step(iter+1, 1:robot.dof) = nan;
     iter_stepnorm(iter+1) = nan;
-    update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, '');
+    iter_degfromstart(iter+1) = 0;
+    update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, '');
     frames(iter+1) = getframe(plot_state.f);
     if do_print
         fprintf('%4s  %8s  %9s  %10s  %12s  %s\n', 'Iter', 'StepNorm', 'ErrAng', 'ErrLin', 'Cond#', 'Joint Angles');    
@@ -84,15 +85,15 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         iter_isotropy(iter+1) = J_isotropy(Jb);
         iter_step(iter+1, 1:robot.dof) = step;
         iter_stepnorm(iter+1) =  norm(step);
-        max_joint_vel = max(abs(step)) ./ lr;
-        update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
-        frames(iter+1) = getframe(plot_state.f);
-        % Print progress
         tool_vec = [0 0 100]';
         vec_of_tool_before = trans2rot(FK_space(robot, start_angles)) * tool_vec;
         vec_of_tool_after = trans2rot(FK_space(robot, joint_angles)) * tool_vec;
-        deg_rotated = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
         fprintf('Degrees rotated total: %.2f\n', deg_rotated);
+        iter_degfromstart(iter+1) = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
+        max_joint_vel = max(abs(step)) ./ lr;
+        update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, capped_desc);
+        frames(iter+1) = getframe(plot_state.f);
+        % Print progress
         if do_print && mod(iter, 1) == 0
             fprintf('%4d  %8f  %9f  %10f  %12.2f  %s\n', iter, iter_stepnorm(iter+1), iter_errang(iter+1), iter_errlin(iter+1), iter_cond(iter+1), mat2str(joint_angles', 4));
         end
@@ -102,7 +103,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         done_word = 'TIMEOUT';
     end
     max_joint_vel = max(max(abs(iter_step))) ./ lr;
-    update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, capped_desc);
+    update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, capped_desc);
     sgtitle(sprintf("Inverse Kinematics via %s\n%s (%s)", plot_title, plot_subtitle, done_word));
     frames(iter+2) = getframe(plot_state.f);
     % Make video file
@@ -147,7 +148,7 @@ function [st] = build_plot()
     st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
 end
 
-function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, capped_desc)
+function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, capped_desc)
     subplot(state.ax_pic);
     ax = show(model, getrobotconfig(model, joint_angles), 'Frames', 'off'); %, 'FastUpdate', true, 'PreservePlot', false);
     subplot(state.ax_pic);
@@ -163,12 +164,18 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     state.text_capped.String = capped_desc;
     hold off;
     subplot(state.ax_ellipse_lin);
-    ellipsoid_plot_linear(J, 'Axis', gca);
-    view([-195 15]);
-    ylim([-2 2]); xlim([-2 2]); ylim([-2 2]);
+    semilogy(stepnorm);
+    title('Log Step Norm');
+    %ellipsoid_plot_linear(J, 'Axis', gca);
+    %view([-195 15]);
+    %ylim([-2 2]); xlim([-2 2]); ylim([-2 2]);
     subplot(state.ax_ellipse_ang);
-    ellipsoid_plot_angular(J, 'Axis', gca);
-    view([-195 15]);
+    plot(degfromstart);
+    title('Deg from Start');
+    ylim([0 180]);
+    yticks([0 45 90 135 180]);
+    %ellipsoid_plot_angular(J, 'Axis', gca);
+    %view([-195 15]);
     subplot(state.ax_err);
     yyaxis left;
     semilogy(linerr);
