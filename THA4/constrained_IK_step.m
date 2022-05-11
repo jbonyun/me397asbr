@@ -16,6 +16,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     use_joint_limits = true;% Apply physical joint limits or not.
     joint_vel_limit = 1.0;  % Radian cap on any joint (nan for none).
     max_distance = 3;       % The radius of the sphere in mm (nan for none)
+    use_plane_limit = false;
     % Weights for objective function. Use 0 to remove.
     weightkinetic = 0.5;    % Weight on dq.
     weightloc = 1;          % Weight on distance from pgoal.
@@ -39,7 +40,9 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     Js = J_space(robot, start_angles);
     Jalpha = Js(1:3, :);
     Jeps = Js(4:6, :);
-
+    Jb = J_body(robot, start_angles);
+    Jbalpha = Jb(1:3, :);
+    Jbeps = Jb(4:6, :);
 
     % Objective function
     % Objective to minimize square change in each joint.
@@ -88,6 +91,11 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     polyb = repmat(max_distance, m*n, 1) - polyA * (t - constraint_center);
     polyA = polyA * Jeps;  % Change from cartesian to joint space.
 
+    plane_normvector = [0 1 0];
+    plane_P0 = [100; 10; 1100];
+    plane_distance = 25;
+    planeA = -plane_normvector * R *(-skewsym(Z) * Jbalpha + Jbeps);
+    planeb = plane_normvector * t - plane_normvector * plane_P0 - plane_distance;
 
 
     % Set up the linear least squares problem.
@@ -105,6 +113,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
     if use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
     if ~isnan(joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
     if ~isnan(max_distance) A = [A; polyA]; b = [b; polyb]; end
+    if use_plane_limit A = [A; planeA]; b = [b; planeb]; end
     
     % Solve the optimization problem.
     optopt = optimoptions(@lsqlin, 'Algorithm', 'interior-point', 'Display', 'off');
@@ -117,6 +126,7 @@ function [dq] = constrained_step(robot, start_angles, pgoal, constraint_center, 
         A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
         if use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
         if ~isnan(joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
+        if use_plane_limit A = [A; planeA]; b = [b; planeb]; end
         % Solve it again.
         [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b, [], [], [], [], [], optopt);
     else
