@@ -88,9 +88,9 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     [polyalpha,polybeta] = meshgrid(linspace(0, 2*pi * (1 - 1/m), m), linspace(0, 2*pi * (1 - 1/n), n));
     polyalpha = reshape(polyalpha, [], 1);
     polybeta = reshape(polybeta, [], 1);
-    polyA = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha)];
-    polyb = repmat(args.max_distance_from_goal, m*n, 1) - polyA * (t - constraint_center);
-    polyA = polyA * Jeps;  % Change from cartesian to joint space.
+    polyA_pre = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha)];
+    polyb = repmat(args.max_distance_from_goal, m*n, 1) - polyA_pre * (t - constraint_center);
+    polyA = polyA_pre * Jeps;  % Change from cartesian to joint space.
 
     plane_normvector = [0 1 0];
     plane_P0 = [100; 10; 1100];
