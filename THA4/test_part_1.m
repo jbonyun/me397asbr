@@ -23,7 +23,7 @@ Dis=norm(p_tip-p_goal)
 % Solve for the required change in joint angles to reach target.\
 while Dis> 0.1
  
- dq=Ls_opt(robot_no_tool, start_angles, Z,center,p_goal)
+ dq=Ls_opt(robot_no_tool, start_angles, Z,p_goal,p_goal)
  q=q+dq;
  tip_TS=FK_space(robot_no_tool,q);
  p_tip = trans2translation(tip_TS);
@@ -60,6 +60,38 @@ end
 
 %%
 clear
+clc
+%addpath('..');
+
+%%% Prepare a robot struct
+robot_no_tool = robot_iiwa();
+
+start_angles=[0.2;0.2;0.2;0.2;0.2;0.2;0.2];
+start_Ts = FK_space(robot_no_tool, start_angles);
+p_goal=[100;10;1100];
+target_Ts=[eye(3,3),p_goal; 0,0,0,1];
+Z=[0;0;100];
+Ptip=[eye(3),Z;0 0 0 1];
+q=start_angles;
+p_tip = trans2translation(start_Ts*Ptip);
+Dis=norm(p_tip-p_goal)
+normvector=[0 1 0];
+P0=[100;10;1100];
+d=15;
+count=0;
+while Dis>0.1
+ 
+ [dq] = Ls_opt3(robot_no_tool, q, target_Ts,Z,normvector,P0,d)
+ q=q+dq;
+ tip_TS=FK_space(robot_no_tool,q);
+ p_tip = trans2translation(tip_TS*Ptip);
+ Dis=norm(p_tip-p_goal)
+ count=count+1;
+end
+
+
+%%
+clear
 addpath('..');
 
 %%% Prepare a robot struct
@@ -75,16 +107,17 @@ q=start_angles;
 p_tip = trans2translation(start_Ts*Ptip);
 Dis=norm(p_tip-p_goal)
 normvector=[0 1 0];
-P0=[100;0;1100];
-d=5;
-while Dis> 0.1
+P0=[100;10;1100];
+d=15;
+width=10;
+hight=16;
+count=0;
+while Dis>0.1
  
- [dq] = Ls_opt3(robot_no_tool, q, target_Ts,Z,normvector,P0,d)
+ [dq] = Ls_opt4(robot_no_tool, start_angles, target_Ts,Z,normvector,P0,d,width,hight)
  q=q+dq;
  tip_TS=FK_space(robot_no_tool,q);
  p_tip = trans2translation(tip_TS*Ptip);
  Dis=norm(p_tip-p_goal)
+ count=count+1;
 end
-
-
-
