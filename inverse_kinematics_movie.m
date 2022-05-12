@@ -161,6 +161,8 @@ function [st] = build_plot(do_plot_details)
         st.f.set('Position', [50 50 800 600]);  % x, y (from bottom), width, height
         st.ax_pic = gca;
     end
+    subplot(st.ax_pic);
+    view(-195,15);
     st.text_iter = annotation('textbox', [0.01 .95 0.01 0.01], 'String', sprintf('Iter %2d', iternum), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
     st.text_err = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f\n\nJVel: nan', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
     st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
@@ -169,12 +171,14 @@ end
 function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, points, capped_desc)
     tool_vector_in_body = [0 0 100]';
     subplot(state.ax_pic);
+    [save_view_az, save_view_el] = view;
     ax = show(model, getrobotconfig(model, joint_angles), 'Frames', 'off'); %, 'FastUpdate', true, 'PreservePlot', false);
     subplot(state.ax_pic);
     xlim([-0.9 0.9]);
     ylim([-0.9 0.9]);
     zlim([-0.1 1.5]);
-    view([-195 15]);
+    %view([-195 15]);
+    view([save_view_az save_view_el]);
     hold all;
     eeTs = FK_space(robot, joint_angles);
     %plot_3d_axis_transform(eeTs, 'ax', ax, 'originscale', 0.001, 'scale', 0.2, 'LineWidth', 1);
