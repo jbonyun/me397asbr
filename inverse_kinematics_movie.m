@@ -126,8 +126,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     frames(iter+2) = getframe(plot_state.f);
     % Make video file
     writer = VideoWriter(video_fname, "MPEG-4");
-    lr_per_second = 0.5;
-    frames_per_second = min(30, max(floor(lr_per_second / lr), 1));
+    lr_per_second = 1;
+    frames_per_second = min(30, max(floor(lr_per_second / lr * sqrt(numel(frames)/50)), 1));
     writer.FrameRate = frames_per_second;
     fprintf('Saving video file to %s at %f fps\n', video_fname, frames_per_second);
     open(writer);
