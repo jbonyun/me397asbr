@@ -49,13 +49,14 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     Jb = J_body(robot, joint_angles);
     eeTs = FK_space(robot, joint_angles);
     tipTs = eeTs * tipTb;
-    iter_errang(iter+1) = norm(twist_b(1:3));
+    %iter_errang(iter+1) = norm(twist_b(1:3));
     iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(tipTs));
     iter_cond(iter+1) = J_condition(Jb);
     iter_isotropy(iter+1) = J_isotropy(Jb);
     iter_step(iter+1, 1:robot.dof) = nan;
     iter_stepnorm(iter+1) = nan;
     iter_degfromstart(iter+1) = 0;
+    iter_errang(iter+1) = iter_degfromstart(iter+1);
     iter_points(iter+1, :) = trans2translation(tipTs);
     update_plot(joint_angles, iter, iter_errlin, iter_errang, nan, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, iter_points, '');
     frames(iter+1) = getframe(plot_state.f);
@@ -94,7 +95,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         eeTs = FK_space(robot, joint_angles);
         tipTs = eeTs * tipTb;
         % Save progress
-        iter_errang(iter+1) = norm(twist_b(1:3));
+        %iter_errang(iter+1) = norm(twist_b(1:3));
         iter_errlin(iter+1) = norm(trans2translation(dest_T) - trans2translation(tipTs)); %norm(trans2translation(twist2trans(twist_b))); %norm(twist_b(4:6));
         iter_cond(iter+1) = J_condition(Jb);
         iter_isotropy(iter+1) = J_isotropy(Jb);
@@ -104,6 +105,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
         vec_of_tool_before = trans2rot(FK_space(robot, start_angles)) * tool_vec;
         vec_of_tool_after = trans2rot(FK_space(robot, joint_angles)) * tool_vec;
         iter_degfromstart(iter+1) = rad2deg(acos(dot(vec_of_tool_before, vec_of_tool_after) / norm(vec_of_tool_before) / norm(vec_of_tool_after)));
+        iter_errang(iter+1) = iter_degfromstart(iter+1);
         iter_points(iter+1, :) = trans2translation(tipTs);
         max_joint_vel = max(abs(step)) ./ lr;
         if mod(iter, 1) == 0
