@@ -46,6 +46,7 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     % Get t vector (translation of tip wrt space frame).
     tipZ = [0; 0; 100];  % The tool tip from end effector in body frame.
     tipTb = rottranslation2trans(eye(3), tipZ);
+    Pkins = trans2translation(startTs);  % end effector translation in space frame before moving
     t = trans2translation(startTs * tipTb);
 
     % Split the Jacobian into translation and rotation parts.
@@ -99,9 +100,9 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     [polyalpha,polybeta] = meshgrid(linspace(0, 2*pi * (1 - 1/m), m), linspace(0, 2*pi * (1 - 1/n), n));
     polyalpha = reshape(polyalpha, [], 1);
     polybeta = reshape(polybeta, [], 1);
-    polyA_pre = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha)];
-    polyb = repmat(args.max_distance_from_goal, m*n, 1) - polyA_pre * (t - constraint_center);
-    polyA = polyA_pre * Jeps;  % Change from cartesian to joint space.
+    poly = [cos(polyalpha).*cos(polybeta) cos(polyalpha).*sin(polybeta) sin(polyalpha)];
+    polyA = poly * (R*((-skewsym(tipZ)*Jbalpha)+Jbeps));
+    polyb = repmat(args.max_distance_from_goal, m*n, 1) - poly * (R*tipZ + Pkins - pgoal);
 
     plane_distance = 0;
     if isempty(args.plane_normal)
@@ -169,7 +170,9 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
 
     % Did we keep bounds?
     if ~all(A*dq<=(b+1e-8))
+        missed_constraint = A*dq > (b+1e-8);
         fprintf('Didnt meet %d of the constraints\n', sum(A*dq>(b+1e-8)));
+        fprintf('Missed constraint numbers: %s\n', mat2str([find(missed_constraint)]));
         %[A*dq b A*dq<=(b+1e-8)]
     end
 
