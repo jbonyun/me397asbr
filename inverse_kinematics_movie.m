@@ -30,7 +30,10 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot(do_plot_details);
     sgtitle(sprintf("%s\n%s", plot_title, plot_subtitle));
-    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc);
+    plane_def = [-.3 -.5 -.9; 250 550 600]';
+    plane_normal = plane_def(:,1)';
+    plane_point = plane_def(:,2);
+    update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, plane_normal, plane_point, cap_desc);
 
     % Helper lambda for getting the twist.
     get_twist = @(joint_angles) get_twist_ex(robot, joint_angles, dest_T);
@@ -168,7 +171,7 @@ function [st] = build_plot(do_plot_details)
     st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
 end
 
-function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, points, capped_desc)
+function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, linerr, angerr, max_joint_vel, J, condnum, isotropy, stepnorm, degfromstart, points, plane_normal, plane_point, capped_desc)
     tool_vector_in_body = [0 0 100]';
     subplot(state.ax_pic);
     [save_view_az, save_view_el] = view;
@@ -186,6 +189,11 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     tipTs = eeTs * rottranslation2trans(eye(3), tool_vector_in_body);
     plot_3d_arrow(trans2translation(eeTs)/1000, (trans2translation(tipTs)-trans2translation(eeTs))/1000, norm(tool_vector_in_body)/1000, 'Color', 'm', 'LineWidth', 5, 'MaxHeadSize', 3);
     plot3(points(:,1)/1000, points(:,2)/1000, points(:,3)/1000, 'k-o');
+    if ~isempty(plane_normal)
+        plot_3d_plane(plane_normal, plane_point, 0.001);
+        side = points * plane_normal' < dot(plane_normal, plane_point);
+        scatter3(points(side,1)*0.001, points(side,2)*0.001, points(side,3)*0.001, 20, 'r', 'filled');
+    end
     state.text_iter.String = sprintf('Iter %2d', iternum);
     state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f', linerr(end), angerr(end));
     state.text_capped.String = capped_desc;
