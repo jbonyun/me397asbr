@@ -15,7 +15,8 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     addParameter(p, 'use_joint_limits', true, @islogical);
     addParameter(p, 'joint_vel_limit', nan, @isfloat);
     addParameter(p, 'max_distance_from_goal', nan, @isfloat);
-    addParameter(p, 'use_plane_limit', false, @islogical);
+    addParameter(p, 'plane', []);
+    addParameter(p, 'enforce_plane', nan);
     addParameter(p, 'weight_loc', 1.0, @isfloat);
     addParameter(p, 'weight_kinetic', 0, @isfloat);
     addParameter(p, 'weight_jointcenter', 0.0, @isfloat);
@@ -23,6 +24,9 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     %p.KeepUnmatched = true;
     parse(p, varargin{:});
     args = p.Results;
+    if isnan(args.enforce_plane)
+        args.enforce_plane = ~isempty(args.plane);
+    end
 
     if isnan(constraint_center)
         constraint_center = pgoal;
@@ -92,11 +96,9 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     polyb = repmat(args.max_distance_from_goal, m*n, 1) - polyA_pre * (t - constraint_center);
     polyA = polyA_pre * Jeps;  % Change from cartesian to joint space.
 
-    plane_normvector = [0 1 0];
-    plane_P0 = [100; 10; 1100];
-    plane_distance = 25;
-    planeA = -plane_normvector * R *(-skewsym(tipZ) * Jbalpha + Jbeps);
-    planeb = plane_normvector * t - plane_normvector * plane_P0 - plane_distance;
+    plane_distance = 0;
+    planeA = -args.plane(:,1)' * R *(-skewsym(tipZ) * Jbalpha + Jbeps);
+    planeb = args.plane(:,1)' * t - args.plane(:,1)' * args.plane(:,2) - plane_distance;
 
 
     % Set up the linear least squares problem.
@@ -114,7 +116,7 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     if args.use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
     if ~isnan(args.joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
     if ~isnan(args.max_distance_from_goal) A = [A; polyA]; b = [b; polyb]; end
-    if args.use_plane_limit A = [A; planeA]; b = [b; planeb]; end
+    if args.enforce_plane A = [A; planeA]; b = [b; planeb]; end
     
     % Solve the optimization problem.
     optopt = optimoptions(@lsqlin, 'Algorithm', 'interior-point', 'Display', 'off');
@@ -127,7 +129,7 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
         A = zeros(1, robot.dof); b = 0;  % If no other limits, need something or it crashes;
         if args.use_joint_limits A = [A; qLA; qUA]; b = [b; qLb; qUb]; end
         if ~isnan(args.joint_vel_limit) A = [A; dqLA; dqUA]; b = [b; dqLb; dqUb]; end
-        if args.use_plane_limit A = [A; planeA]; b = [b; planeb]; end
+        if args.enforce_plane A = [A; planeA]; b = [b; planeb]; end
         % Solve it again.
         [dq, resnorm, residual, exitflag, output, lambda] = lsqlin(C, d, A, b, [], [], [], [], [], optopt);
     else
