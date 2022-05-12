@@ -168,7 +168,10 @@ function [st] = build_plot(do_plot_details)
         st.ax_pic = gca;
     end
     subplot(st.ax_pic);
-    view(-195,15);
+    view(-195,15);  % My preferred view
+    %view(-108, 12);  % Special view for looking at a particular plane
+    %view(32,22); % Special view for looking at a particular plane
+    %view(38,19); % Special view for joint limit demo
     st.text_iter = annotation('textbox', [0.01 .95 0.01 0.01], 'String', sprintf('Iter %2d', iternum), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
     st.text_err = annotation('textbox', [0.01 .90 0.01 0.01], 'String', sprintf('Error\nLin: %.4f\nAng: %.4f\n\nJVel: nan', linerr, angerr), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
     st.text_capped = annotation('textbox', [0.01 .70 0.01 0.01], 'String', sprintf('uncapped'), 'FitBoxToText', true, 'LineStyle', 'none', 'FontWeight', 'bold', 'FontName', 'Times');
