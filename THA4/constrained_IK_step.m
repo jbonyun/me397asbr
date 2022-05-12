@@ -27,6 +27,13 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     if isnan(args.enforce_plane)
         args.enforce_plane = ~isempty(args.plane);
     end
+    if isempty(args.plane)
+        args.plane_normal = [];
+        args.plane_point = [];
+    else
+        args.plane_normal = args.plane(:,1)';
+        args.plane_point = args.plane(:,2);
+    end
 
     if isnan(constraint_center)
         constraint_center = pgoal;
@@ -97,8 +104,13 @@ function [dq] = constrained_IK_step(robot, start_angles, pgoal, constraint_cente
     polyA = polyA_pre * Jeps;  % Change from cartesian to joint space.
 
     plane_distance = 0;
-    planeA = -args.plane(:,1)' * R *(-skewsym(tipZ) * Jbalpha + Jbeps);
-    planeb = args.plane(:,1)' * t - args.plane(:,1)' * args.plane(:,2) - plane_distance;
+    if isempty(args.plane_normal)
+        planeA = [];
+        planeb = [];
+    else
+        planeA = -args.plane_normal * R *(-skewsym(tipZ) * Jbalpha + Jbeps);
+        planeb = args.plane_normal * t - args.plane_normal * args.plane_point - plane_distance;
+    end
 
 
     % Set up the linear least squares problem.

@@ -30,9 +30,10 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot(do_plot_details);
     sgtitle(sprintf("%s\n%s", plot_title, plot_subtitle));
-    plane_def = [-.3 -.5 -.9; 250 550 600]';
-    plane_normal = plane_def(:,1)';
-    plane_point = plane_def(:,2);
+    %plane_def = [-.3 -.5 -.9; 250 550 600]';
+    %plane_def = [-.35 -.55 -.8; 250 550 600]';
+    %plane_normal = plane_def(:,1)'; plane_point = plane_def(:,2);
+    plane_normal = []; plane_point = [];
     update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, plane_normal, plane_point, cap_desc);
 
     % Helper lambda for getting the twist.
