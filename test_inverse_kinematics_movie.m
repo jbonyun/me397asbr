@@ -72,10 +72,4 @@ for i_test_cases = 1:numel(test_cases)
     if ~(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 1e-0, 'all'))
         fprintf('** Translation not converged **\n');
     end
-    
-%     figure;
-%     subplot(2, 1, 1);
-%     title('Pose Error'); xlabel('Iteration'); hold all; yyaxis left; plot(0:numel(iter_errang)-1, iter_errang); ylabel('Norm of Angular Deviation'); yyaxis right; plot(0:numel(iter_errlin)-1, iter_errlin); ylabel('Norm of Linear Deviation');
-%     subplot(2, 1, 2);
-%     title('Condition and Step Size'); xlabel('Iteration'); hold all; yyaxis left; plot(0:numel(iter_cond)-1, iter_cond); ylabel('Condition Number'); yyaxis right; plot(0:numel(iter_stepnorm)-1, iter_stepnorm); ylabel('Norm Of Step');
 end
