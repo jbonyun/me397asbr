@@ -20,8 +20,8 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     % Some constants for the algorithm.
     angular_thresh = 999; %0.001;  % When to stop the search.
     linear_thresh = 1.0; %0.01;  % When to stop the search.
-    iter_limit = 200;
     joint_step_size_limit = inf;  % Max amount any joint can move in a step.
+    iter_limit = 100;
     do_print = true;
 
     % Prepare the robot graphics model
@@ -29,7 +29,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
 
     % Prepare plot and make a lambda to simplify the call to update.
     plot_state = build_plot(do_plot_details);
-    sgtitle(sprintf("Inverse Kinematics via %s\n%s", plot_title, plot_subtitle));
+    sgtitle(sprintf("%s\n%s", plot_title, plot_subtitle));
     update_plot = @(jang, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc) make_plot(kuka, robot, plot_state, jang, dest_T, iter, linerr, angerr, maxjvel, J, cond, iso, step, deg, pts, cap_desc);
 
     % Helper lambda for getting the twist.
@@ -119,7 +119,7 @@ function [joint_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_ste
     end
     max_joint_vel = max(max(abs(iter_step))) ./ lr;
     update_plot(joint_angles, iter, iter_errlin, iter_errang, max_joint_vel, Jb, iter_cond, iter_isotropy, iter_stepnorm, iter_degfromstart, iter_points, capped_desc);
-    sgtitle(sprintf("Inverse Kinematics via %s\n%s (%s)", plot_title, plot_subtitle, done_word));
+    sgtitle(sprintf("%s\n%s (%s)", plot_title, plot_subtitle, done_word));
     frames(iter+2) = getframe(plot_state.f);
     % Make video file
     writer = VideoWriter(video_fname, "MPEG-4");
@@ -187,7 +187,7 @@ function [ax] = make_plot(model, robot, state, joint_angles, dest_T, iternum, li
     plot_3d_arrow(trans2translation(eeTs)/1000, (trans2translation(tipTs)-trans2translation(eeTs))/1000, norm(tool_vector_in_body)/1000, 'Color', 'm', 'LineWidth', 5, 'MaxHeadSize', 3);
     plot3(points(:,1)/1000, points(:,2)/1000, points(:,3)/1000, 'k-o');
     state.text_iter.String = sprintf('Iter %2d', iternum);
-    state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f\n\nJVel: %.1f', linerr(end), angerr(end), max_joint_vel);
+    state.text_err.String = sprintf('Error\nLin: %.3f\nAng: %.3f', linerr(end), angerr(end));
     state.text_capped.String = capped_desc;
     hold off;
     if state.has_details
