@@ -72,24 +72,27 @@ for i_test_cases = 1:numel(test_cases)
     start_pose = FK_space(robot, joint_angles);
     % Invent a destination pose.
     target_joint_angles = test_cases{i_test_cases}{2};
-    target_pose = FK_space(robot, target_joint_angles);
+    targeteeTs = FK_space(robot, target_joint_angles);
+    tool_vector_in_body = [0; 0; 100];
+    toolTb = rottranslation2trans(eye(3), tool_vector_in_body);
+    targettoolTs = targeteeTs * toolTb;
     % Replace target orientation with starting orientation, because we're
     % trying to work on translation and stability.
-    target_pose(1:3, 1:3) = trans2rot(start_pose);
+    targettoolTs(1:3, 1:3) = trans2rot(start_pose);
     init_guess = joint_angles;
-    fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(target_pose)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
+    fprintf('\nTwist from %s to %s\nJoints from %s to (for example) %s\n', mat2str(trans2twist(start_pose)', 5), mat2str(trans2twist(targettoolTs)', 5), mat2str(init_guess', 5), mat2str(target_joint_angles', 5));
     % Now solve it.
-    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, target_pose, step_function, do_plot_details, method_name, plot_subtitle, video_fname, lr);
+    [ik_angles, iter_errang, iter_errlin, iter_cond, iter_step, iter_stepnorm] = inverse_kinematics_movie(robot, init_guess, targettoolTs, step_function, do_plot_details, method_name, plot_subtitle, video_fname, lr);
     ik_pose = FK_space(robot, ik_angles);
     % Print results
     fprintf('Max joint velocity: %.2f %s\n', max(max(abs(iter_step))) ./ lr, mat2str(max(abs(iter_step)) ./ lr, 3));
     fprintf('Joint Angle Solution: %s\n', mat2str(ik_angles', 5));
-    fprintf('Angular error in ZYZ: %s\n', mat2str((rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)))', 5));
-    fprintf('Linear error in xyz: %s\n', mat2str((trans2translation(target_pose)-trans2translation(ik_pose))', 5));
-    if ~(all(rot2zyz(trans2rot(target_pose))-rot2zyz(trans2rot(ik_pose)) < 1e-1, 'all') || all(rot2rpy(trans2rot(target_pose))-rot2rpy(trans2rot(ik_pose)) < 1e-1, 'all'))
+    fprintf('Angular error in ZYZ: %s\n', mat2str((rot2zyz(trans2rot(targettoolTs))-rot2zyz(trans2rot(ik_pose)))', 5));
+    fprintf('Linear error in xyz: %s\n', mat2str((trans2translation(targettoolTs)-trans2translation(ik_pose))', 5));
+    if ~(all(rot2zyz(trans2rot(targettoolTs))-rot2zyz(trans2rot(ik_pose)) < 1e-1, 'all') || all(rot2rpy(trans2rot(targettoolTs))-rot2rpy(trans2rot(ik_pose)) < 1e-1, 'all'))
         fprintf('** Rotation not converged **\n');
     end
-    if ~(all((trans2translation(target_pose)-trans2translation(ik_pose)) < 1e-0, 'all'))
+    if ~(all((trans2translation(targettoolTs)-trans2translation(ik_pose)) < 1e-0, 'all'))
         fprintf('** Translation not converged **\n');
     end
 end
