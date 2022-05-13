@@ -23,7 +23,7 @@ test_cases = {};
 %case_desc = 'To off-zero singularity'; case_fname = 'XXtoSing'; test_cases{end + 1} = {[.4 .4 .4 .4 .4 .4 .4]', [.4 0 .4 .4 .4 0 .4]'};
 %case_desc = 'Through off-zero singularity'; case_fname = 'XXthroughSing'; test_cases{end + 1} = {[.4 .4 .4 .4 .4 .4 .4]', [.4 -0.4 .4 .4 .4 -0.4 .4]'};
 %case_desc = 'To off-zero singularity'; case_fname = 'XXtoSing'; test_cases{end + 1} = {[1 1 1 1 1 1 1]', [1 0 1 1 1 0 1]'};
-%case_desc = 'To off-zero singularity B'; case_fname = 'XXtoSing'; test_cases{end + 1} = {[1 1 1 1 1 1 1]', [1 pi/2 1 0 1 1 1]'};
+case_desc = 'To off-zero singularity B'; case_fname = 'XXtoSing'; test_cases{end + 1} = {[1 1 1 1 1 1 1]', [1 pi/2 1 0 1 1 1]'};
 %case_desc = 'Through off-zero singularity B'; case_fname = 'XXthroughSing'; test_cases{end + 1} = {[0 1 1 1 1 1 1]', [0 pi/2+.1 1 0-0.15 1 1 1]'};
 %case_desc = 'Through off-zero singularity'; case_fname = 'BthroughSing'; test_cases{end + 1} = {[1 1 1 1 1 1 1]', [1 -1 1 1 1 -1 1]'};
 %test_cases{end + 1} = {[-0.3,-0.3,-0.3,-0.3,-0.3,-0.3,-0.3]', [0.1;0.1;0.1;0.1;0.1;0.1;0.1]};
@@ -33,38 +33,38 @@ test_cases = {};
 %test_cases{end + 1} = {deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi, deg2rad(joints(12,:))' + randn(size(joints,2), 1) * 1 * pi};
 %case_desc = 'Yuewans plane test'; case_fname = 'PlaneTest'; test_cases{end + 1} = {[0.2 0.2 0.2 0.2 0.2 0.2 0.2]', [1 -1 1 1 1 -1 1]'};
 %case_desc = 'Test Joint Limits'; case_fname = 'TestJointLimits'; rng(12346); test_cases{end + 1} = {robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1)), robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1))};
-case_desc = 'Demo 3mm Sphere'; case_fname = 'Demo3mm'; rng(12350); test_cases{end + 1} = {robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1)), robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1))};
+%case_desc = 'Demo 3mm Sphere'; case_fname = 'Demo3mm'; rng(12350); test_cases{end + 1} = {robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1)), robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1))};
 %case_desc = 'Demo Straight Up'; case_fname = 'Straight Up'; test_cases{end + 1} = {[0 0 0 0 0 0 0]', [0 0 0 0 0 0 0]'};
 %case_desc = 'Demo Orientation'; case_fname = 'DemoOr'; rng(12355); test_cases{end + 1} = {robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1)), robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1))};
 %case_desc = 'Demo Plane'; case_fname = 'DemoPlane'; rng(12361); test_cases{end + 1} = {robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1)), robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1))};
 %rng(12362); case_desc = 'Random To Random'; case_fname = 'Random'; test_cases{end + 1} = {robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1)), robot.joint_limits(:,1) + rand(robot.dof, 1) .* (robot.joint_limits(:,2) - robot.joint_limits(:,1))};
 %case_desc = 'Yuewans sphere test'; case_fname = 'YSphereTest'; test_cases{end + 1} = {[0.2 0.2 0.2 0.2 0.2 0.2 0.2]', [1.739 4.61 -2.44 1 -2.262 4.638 1.842]'};
 
-%lr = 1;
-%method_name = 'J Inverse'; method_fname = 'JInv'; step_function = @(ang, tw) J_inverse_kinematics_step(robot, ang, tw, lr);
-%rrk0 = '1e-7'; method_name = sprintf('Redundancy Resolution (%s)', rrk0); method_fname = sprintf('RedRes%s', rrk0); step_function = @(ang, tw) redundancy_resolution_inverse_kinematics_step(robot, ang, tw, lr, str2double(rrk0), 0.01);
-%method_name = 'DLS'; method_fname = 'DLS'; step_function = @(ang, tw) DLS_inverse_kinematics_step(robot, ang, tw, lr, .1);
-%method_name = 'J transpose'; method_fname = 'JTrans'; step_function = @(ang, tw) J_transpose_inverse_kinematics_step(robot, ang, tw, lr);
-%method_name = 'Smart'; method_fname = 'Smart'; step_function = @(ang, tw) J_combination_inverse_kinematics_step(robot, ang, tw, lr);
-%method_name = 'Constrained With Off-Goal Constraint'; method_fname = 'Constrained'; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, [0 0 800]', lr);
+
+
 %method_name = 'Without Joint Limits'; method_fname = 'ConstrainedNoJointLimits'; lr = 0.5; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false);
 %method_name = 'With Joint Limits'; method_fname = 'ConstrainedJointLimits'; lr=0.5; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true);
-method_name = 'Just Kinetic Energy'; method_fname = 'JustKinetic'; lr = 1.0; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false, 'max_distance_from_goal', nan, 'weight_loc', 0, 'weight_kinetic', 1);
+
+%method_name = 'Just Kinetic Energy'; method_fname = 'JustKinetic'; lr = 1.0; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false, 'max_distance_from_goal', nan, 'weight_loc', 0, 'weight_kinetic', 1);
 %method_name = 'Max 3mm'; method_fname = 'Max3mm'; lr = 1.0; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false, 'max_distance_from_goal', 3, 'weight_loc', 0, 'weight_kinetic', 1);
 %method_name = 'Max 4mm'; method_fname = 'Max4mm'; lr = 1.0; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false, 'max_distance_from_goal', 4, 'weight_loc', 0, 'weight_kinetic', 1);
 %method_name = 'Max 10mm'; method_fname = 'Max10mm'; lr = 1.0; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false, 'max_distance_from_goal', 10, 'weight_loc', 0, 'weight_kinetic', 1);
-%method_name = 'Constrained, Just Kinetic'; method_fname = 'ConstrainedNoMax3mm'; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', false, 'max_distance_from_goal', nan, 'weight_loc', 1, 'weight_kinetic',0);
-%method_name = 'Constrained wJL Orientation=0'; method_fname = 'ConstrainedOrientationOff'; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 0);
+
 %method_name = 'w_{\alpha}=50'; method_fname = 'Orientation50'; lr=0.1; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 50, 'weight_kinetic', 1, 'joint_vel_limit', 0.2);
 %method_name = 'w_{\alpha}=5'; method_fname = 'Orientation5'; lr=0.25; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 5, 'weight_kinetic', 1, 'joint_vel_limit', nan);
 %method_name = 'w_{\alpha}=1'; method_fname = 'Orientation1'; lr=0.25; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 1, 'weight_kinetic', 1, 'joint_vel_limit', nan);
 %method_name = 'Orientation=5,Centering=5'; method_fname = 'Orientation5Center5'; lr=0.1; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 5, 'weight_kinetic', 1, 'joint_vel_limit', nan, 'weight_jointcenter', 5);
 %method_name = 'w_{\alpha}=off'; method_fname = 'OrientationOff'; lr=0.25; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 0, 'weight_kinetic', 1, 'joint_vel_limit', nan);
 %method_name = 'w_{\alpha}=off'; method_fname = 'OrientationOff'; lr=0.1; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 0, 'weight_kinetic', 1, 'joint_vel_limit', 0.2);
+
 %method_name = 'Plane Limit On'; method_fname = 'PlaneOn'; lr=1; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_kinetic', 1, 'joint_vel_limit', 0.2, 'plane', [-.3 -.5 -.9; 250 550 600]');
 %method_name = 'Plane Limit Off'; method_fname = 'PlaneOff'; lr=1; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_kinetic', 1, 'joint_vel_limit', 0.2, 'plane', [-.3 -.5 -.9; 250 550 600]', 'enforce_plane', false);
+
 %method_name = 'w_{\alpha}=50, Plane Limit Off'; method_fname = 'Orientation50PlaneOff'; lr=.333; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 50, 'weight_kinetic', 1, 'joint_vel_limit', 0.2, 'plane', [-.35 -.55 -.8; 250 550 600]', 'enforce_plane', false);
 %method_name = 'w_{\alpha}=50, Plane Limit On'; method_fname = 'Orientation50PlaneOn'; lr=0.333; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'weight_orientation', 50, 'weight_kinetic', 1, 'joint_vel_limit', 0.2, 'plane', [-.35 -.55 -.8; 250 550 600]', 'enforce_plane', true);
+
+method_name = 'Best Method'; method_fname = 'BestMethod'; lr = 0.333; step_function = @(ang, tw) constrained_IK_step(robot, ang, tw, nan, lr, 'use_joint_limits', true, 'max_distance_from_goal', 3, 'weight_orientation', 50, 'weight_loc', 1, 'weight_kinetic', 1, 'joint_vel_limit', 0.2);
+
 plot_subtitle = sprintf('%s, lr=%.2f ', case_desc, lr);
 video_fname = sprintf('video_%s_%s_lr%4.2f.mp4', method_fname, case_fname, lr);
 do_plot_details = true;
